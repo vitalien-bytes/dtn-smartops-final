@@ -1,36 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ board.title }}</title>
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <title>{{ board.title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="dark">
-  <header class="topbar">
+<header class="topbar">
     <div class="logo-title">
-      <div class="logo-dot"></div>
-      <h1>{{ board.title }}</h1>
+        <h1>📋 {{ board.title }}</h1>
     </div>
-  </header>
+    <form method="get" action="/">
+        <button type="submit">🔒 Déconnexion</button>
+    </form>
+</header>
 
-  <main class="board">
-    {% for col in columns %}
+<main class="board">
+
+    <!-- Ajouter une nouvelle colonne -->
+    <section class="new-column">
+        <form method="post" action="/add_column">
+            <input name="title" placeholder="Nom de la colonne..." required>
+            <button type="submit">➕ Ajouter colonne</button>
+        </form>
+    </section>
+
+    {% for column in columns %}
     <section class="column">
-      <h2>{{ col.title }}</h2>
-      <div class="cards">
-        {% for card in col_cards[col.id] %}
-        <article class="card">
-          <h3>{{ card.title }}</h3>
-          {% if card.description %}<p>{{ card.description }}</p>{% endif %}
-        </article>
+        <h2>{{ column.title }}</h2>
+
+        {% for card in column.cards %}
+        <div class="card">{{ card.title }}</div>
         {% endfor %}
-        {% if not col_cards[col.id] %}
-        <div class="empty">Aucune carte.</div>
-        {% endif %}
-      </div>
+
+        <!-- Ajouter une carte -->
+        <form method="post" action="/add_card/{{ column.id }}">
+            <input name="title" placeholder="Nouvelle tâche..." required>
+            <button type="submit">+</button>
+        </form>
     </section>
     {% endfor %}
-  </main>
+
+</main>
 </body>
 </html>
