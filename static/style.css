@@ -2,7 +2,7 @@
     --bg: #f5f7fa;
     --card: #ffffff;
     --accent: #0078d4;
-    --accent2: #1890ff;
+    --accent2: #ff6600;
     --text: #1e293b;
     --muted: #64748b;
 }
@@ -24,15 +24,15 @@ header {
 }
 
 header img {
-    height: 40px;
-    margin-right: 10px;
+    height: 55px;
+    margin-right: 12px;
 }
 
 header h1 {
     display: flex;
     align-items: center;
-    font-size: 1.4em;
-    color: var(--accent);
+    font-size: 1.6em;
+    font-weight: 800;
 }
 
 .menu {
@@ -70,13 +70,50 @@ button:hover, .menu a:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 
-.column h2 {
+.column-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    font-size: 1.4em;
+    cursor: pointer;
+    color: var(--muted);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 0.5em;
+    z-index: 100;
+}
+
+.dropdown-menu form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0.3em 0.5em;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+    background: #f1f5f9;
 }
 
 .card {
@@ -90,6 +127,7 @@ button:hover, .menu a:hover {
 form {
     display: flex;
     gap: 0.5em;
+    margin-top: 0.5em;
 }
 
 input {
