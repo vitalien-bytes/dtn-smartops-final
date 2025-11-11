@@ -1,81 +1,110 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ board.title }}</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DTN SmartOps</title>
+
+  <!-- Favicon (ton logo simplifié en PNG transparent) -->
+  <link rel="icon" type="image/png" href="/static/favicon.png" />
+
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
-  <header class="header">
-    <div class="logo-area">
-      <img src="/static/logo.png" alt="DTN SmartOps" class="logo">
-      <h1><span class="black">DTN</span><span class="orange">SmartOps</span></h1>
+<body class="light">
+  <header class="topbar">
+    <div class="brand">
+      <img src="/static/logo.png" alt="DTN SmartOps" class="logo" />
+      <span class="brand-text"><b>DTN</b><span class="accent">SmartOps</span></span>
     </div>
-    <form method="post" action="/logout">
-      <button class="logout">Déconnexion</button>
-    </form>
+
+    <div class="actions">
+      <input id="newColumnName" class="input" placeholder="Nom de la colonne…" />
+      <button id="addColumnBtn" class="btn btn-primary">Ajouter colonne</button>
+      <button id="openDrawerBtn" class="btn btn-accent">+ Nouvelle tâche</button>
+    </div>
   </header>
 
-  <main class="board">
-    <div class="add-col">
-      <input type="text" placeholder="Nom de la colonne..." id="new-col-name">
-      <button id="add-col-btn">Ajouter colonne</button>
-    </div>
-
-    {% for col in columns %}
-    <section class="column" data-col-id="{{ col.id }}">
-      <div class="column-header">
-        <h2>{{ col.title }}</h2>
-        <button class="menu-btn">⋮</button>
-        <div class="menu">
-          <input type="text" placeholder="Nouveau nom">
-          <button class="rename">Renommer</button>
-          <button class="delete">Supprimer</button>
-        </div>
-      </div>
-
-      <div class="cards" ondrop="drop(event)" ondragover="allowDrop(event)">
-        {% for card in col.cards %}
-        <article class="card" draggable="true" ondragstart="drag(event)" id="card-{{ card.id }}">
-          <strong>{{ card.client_name }}</strong><br>
-          <small>{{ card.address }}</small>
-          <div class="card-menu">
-            <button class="edit">Modifier</button>
-            <button class="remove">Supprimer</button>
-          </div>
-        </article>
-        {% endfor %}
-      </div>
-
-      <div class="add-task">
-        <input type="text" placeholder="Nouvelle tâche...">
-        <button class="add">+</button>
-      </div>
-    </section>
-    {% endfor %}
+  <main id="board" class="board">
+    <!-- Colonnes injectées par JS -->
   </main>
 
-  <script>
-    let dragged;
+  <!-- =============== Panneau latéral : Nouvelle tâche =============== -->
+  <aside id="drawer" class="drawer">
+    <div class="drawer-header">
+      <h3>Nouvelle tâche</h3>
+      <button id="drawerClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
 
-    function allowDrop(e) { e.preventDefault(); }
-    function drag(e) {
-      dragged = e.target;
-      e.dataTransfer.setData("text", e.target.id);
-      setTimeout(() => e.target.classList.add("dragging"), 0);
-    }
-    function drop(e) {
-      e.preventDefault();
-      const id = e.dataTransfer.getData("text");
-      const card = document.getElementById(id);
-      card.classList.remove("dragging");
-      if (e.target.classList.contains("cards")) {
-        e.target.appendChild(card);
-      } else if (e.target.closest(".cards")) {
-        e.target.closest(".cards").appendChild(card);
-      }
-    }
-  </script>
+    <form id="taskForm" class="form">
+      <div class="grid-2">
+        <label>Prénom
+          <input name="firstname" class="input" placeholder="Jean" required />
+        </label>
+        <label>Nom
+          <input name="lastname" class="input" placeholder="Dupont" required />
+        </label>
+      </div>
+
+      <label>Téléphone
+        <input name="phone" class="input" placeholder="06 12 34 56 78" />
+      </label>
+
+      <label>Email
+        <input type="email" name="email" class="input" placeholder="client@mail.com" />
+      </label>
+
+      <label>Adresse postale
+        <textarea name="address" class="input" rows="2" placeholder="N°, rue, compl., CP Ville"></textarea>
+      </label>
+
+      <label>Catégorie de travaux
+        <select name="category" id="category" class="input">
+          <option value="Électricité">Électricité</option>
+          <option value="Télécom">Télécom</option>
+          <option value="GC">GC</option>
+          <option value="Viabilisation">Viabilisation</option>
+          <option value="Panneaux solaires">Panneaux solaires</option>
+          <option value="Borne IRVE">Borne IRVE</option>
+          <option value="Autre">Autre…</option>
+        </select>
+      </label>
+
+      <label id="customCatWrap" class="hidden">Nouvelle catégorie
+        <input name="customCategory" class="input" placeholder="Saisir la catégorie" />
+      </label>
+
+      <label>Date de RDV
+        <input type="date" name="date" class="input" />
+      </label>
+
+      <label>Notes (interne)
+        <textarea name="notes" class="input" rows="3" placeholder="Détails, contraintes, etc."></textarea>
+      </label>
+
+      <div class="form-actions">
+        <button type="button" id="cancelTask" class="btn">Annuler</button>
+        <button type="submit" class="btn btn-primary">Créer</button>
+      </div>
+    </form>
+  </aside>
+  <div id="drawerBackdrop" class="backdrop"></div>
+
+  <!-- =============== Modale fiche client =============== -->
+  <div id="cardModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">Fiche client</h3>
+        <button id="modalClose" class="icon-btn" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions">
+        <button id="modalEdit" class="btn">Modifier</button>
+        <button id="modalDelete" class="btn btn-danger">Supprimer</button>
+      </div>
+    </div>
+  </div>
+  <div id="modalBackdrop" class="backdrop"></div>
+
+  <script src="/static/app.js"></script>
 </body>
 </html>
