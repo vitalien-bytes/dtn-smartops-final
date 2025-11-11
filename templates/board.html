@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ board.title }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark">
+  <header class="topbar">
+    <div class="logo-title">
+      <div class="logo-dot"></div>
+      <h1>{{ board.title }}</h1>
+    </div>
+  </header>
+
+  <main class="board">
+    {% for col in columns %}
+    <section class="column">
+      <h2>{{ col.title }}</h2>
+      <div class="cards">
+        {% for card in col_cards[col.id] %}
+        <article class="card">
+          <h3>{{ card.title }}</h3>
+          {% if card.description %}<p>{{ card.description }}</p>{% endif %}
+        </article>
+        {% endfor %}
+        {% if not col_cards[col.id] %}
+        <div class="empty">Aucune carte.</div>
+        {% endif %}
+      </div>
+    </section>
+    {% endfor %}
+  </main>
+</body>
+</html>
