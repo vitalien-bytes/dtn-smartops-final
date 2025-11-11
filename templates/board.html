@@ -2,193 +2,80 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>{{ board.title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ board.title }}</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <img src="/static/logo.png" alt="DTN SmartOps" class="brand__logo">
-      <h1 class="brand__title">
-        <span class="brand__title--black">DTN</span>
-        <span class="brand__title--orange">SmartOps</span>
-      </h1>
+  <header class="header">
+    <div class="logo-area">
+      <img src="/static/logo.png" alt="DTN SmartOps" class="logo">
+      <h1><span class="black">DTN</span><span class="orange">SmartOps</span></h1>
     </div>
+    <form method="post" action="/logout">
+      <button class="logout">Déconnexion</button>
+    </form>
   </header>
 
-  <main class="board-container">
-    <div class="add-column">
-      <input type="text" id="newColumnName" placeholder="Nom de la colonne..." class="input">
-      <button class="btn btn--primary" id="addColumnBtn">Ajouter colonne</button>
+  <main class="board">
+    <div class="add-col">
+      <input type="text" placeholder="Nom de la colonne..." id="new-col-name">
+      <button id="add-col-btn">Ajouter colonne</button>
     </div>
 
-    <div class="board" id="board"></div>
+    {% for col in columns %}
+    <section class="column" data-col-id="{{ col.id }}">
+      <div class="column-header">
+        <h2>{{ col.title }}</h2>
+        <button class="menu-btn">⋮</button>
+        <div class="menu">
+          <input type="text" placeholder="Nouveau nom">
+          <button class="rename">Renommer</button>
+          <button class="delete">Supprimer</button>
+        </div>
+      </div>
+
+      <div class="cards" ondrop="drop(event)" ondragover="allowDrop(event)">
+        {% for card in col.cards %}
+        <article class="card" draggable="true" ondragstart="drag(event)" id="card-{{ card.id }}">
+          <strong>{{ card.client_name }}</strong><br>
+          <small>{{ card.address }}</small>
+          <div class="card-menu">
+            <button class="edit">Modifier</button>
+            <button class="remove">Supprimer</button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <div class="add-task">
+        <input type="text" placeholder="Nouvelle tâche...">
+        <button class="add">+</button>
+      </div>
+    </section>
+    {% endfor %}
   </main>
 
-  <dialog id="taskModal" class="modal">
-    <div class="modal__head">
-      <h3 id="modalTitle">Nouvelle tâche / Client</h3>
-      <button class="modal__close" onclick="closeModal()">✖</button>
-    </div>
-    <form id="taskForm" class="grid">
-      <div class="field"><span>Nom</span><input type="text" name="nom" class="input" required></div>
-      <div class="field"><span>Prénom</span><input type="text" name="prenom" class="input" required></div>
-      <div class="field"><span>Adresse postale</span><input type="text" name="adresse" class="input"></div>
-      <div class="field"><span>Date de RDV</span><input type="date" name="date_rdv" class="input"></div>
-      <div class="modal__foot field--full">
-        <button type="button" class="btn btn--ghost" onclick="closeModal()">Annuler</button>
-        <button type="submit" class="btn btn--primary">Enregistrer</button>
-      </div>
-    </form>
-  </dialog>
-
   <script>
-    const board = document.getElementById("board");
-    const addColumnBtn = document.getElementById("addColumnBtn");
-    const newColumnNameInput = document.getElementById("newColumnName");
+    let dragged;
 
-    const modal = document.getElementById("taskModal");
-    const form  = document.getElementById("taskForm");
-
-    let columns = [];
-    let tasks = [];
-    let currentEditTask = null;
-    let currentColumnId = null;
-
-    function openModal(columnId, taskId=null) {
-      currentColumnId = columnId;
-      currentEditTask = taskId;
-      if (taskId) {
-        const t = tasks.find(x => x.id === taskId);
-        if (t) {
-          form.nom.value = t.nom;
-          form.prenom.value = t.prenom;
-          form.adresse.value = t.adresse;
-          form.date_rdv.value = t.date_rdv;
-        }
-      } else {
-        form.reset();
-      }
-      modal.showModal();
+    function allowDrop(e) { e.preventDefault(); }
+    function drag(e) {
+      dragged = e.target;
+      e.dataTransfer.setData("text", e.target.id);
+      setTimeout(() => e.target.classList.add("dragging"), 0);
     }
-
-    function closeModal() {
-      modal.close();
-      currentEditTask = null;
-      currentColumnId = null;
-    }
-
-    form.addEventListener("submit", (e) => {
+    function drop(e) {
       e.preventDefault();
-      const fd = new FormData(form);
-      const newTask = {
-        id: currentEditTask || Date.now(),
-        columnId: currentColumnId,
-        nom: fd.get("nom") || "",
-        prenom: fd.get("prenom") || "",
-        adresse: fd.get("adresse") || "",
-        date_rdv: fd.get("date_rdv") || ""
-      };
-
-      if (currentEditTask) {
-        const idx = tasks.findIndex(t => t.id === currentEditTask);
-        if (idx !== -1) tasks[idx] = newTask;
-      } else {
-        tasks.push(newTask);
+      const id = e.dataTransfer.getData("text");
+      const card = document.getElementById(id);
+      card.classList.remove("dragging");
+      if (e.target.classList.contains("cards")) {
+        e.target.appendChild(card);
+      } else if (e.target.closest(".cards")) {
+        e.target.closest(".cards").appendChild(card);
       }
-
-      closeModal();
-      renderBoard();
-    });
-
-    addColumnBtn.addEventListener("click", () => {
-      const name = newColumnNameInput.value.trim();
-      if (!name) return;
-      const id = Date.now();
-      columns.push({ id, name });
-      newColumnNameInput.value = "";
-      renderBoard();
-    });
-
-    function renderBoard() {
-      board.innerHTML = "";
-      columns.forEach(col => {
-        const colTasks = tasks.filter(t => t.columnId === col.id);
-        const colElement = document.createElement("div");
-        colElement.className = "column";
-        colElement.innerHTML = `
-          <div class="column__head">
-            <h2 contenteditable="false" class="column__title">${col.name}</h2>
-            <div class="menu">
-              <button class="menu__btn" onclick="toggleMenu(event)">⋮</button>
-              <div class="menu__list">
-                <button class="menu__item" onclick="editColumn(${col.id})">Renommer</button>
-                <button class="menu__item" onclick="deleteColumn(${col.id})">Supprimer</button>
-              </div>
-            </div>
-          </div>
-          <div class="cards">${colTasks.map(renderCardHTML).join("")}</div>
-          <div class="add-task">
-            <input type="text" placeholder="Nouvelle tâche..." class="input" id="taskInput-${col.id}">
-            <button class="btn btn--primary" onclick="openModal(${col.id})">+</button>
-          </div>
-        `;
-        board.appendChild(colElement);
-      });
     }
-
-    function renderCardHTML(t) {
-      const fullName = `${t.prenom} ${t.nom}`.trim();
-      return `
-        <div class="card">
-          <div class="card__body">
-            <div class="card__info">
-              <div class="card__title">${fullName || "Client"}</div>
-              <div class="card__desc">${t.adresse || ""}</div>
-            </div>
-            <div class="menu">
-              <button class="menu__btn" onclick="toggleMenu(event)">⋮</button>
-              <div class="menu__list">
-                <button class="menu__item" onclick="openModal(${t.columnId}, ${t.id})">Modifier</button>
-                <button class="menu__item" onclick="deleteTask(${t.id})">Supprimer</button>
-              </div>
-            </div>
-          </div>
-        </div>`;
-    }
-
-    function toggleMenu(e) {
-      const menu = e.target.nextElementSibling;
-      menu.classList.toggle("is-open");
-      document.addEventListener("click", (evt) => {
-        if (!menu.contains(evt.target) && evt.target !== e.target) {
-          menu.classList.remove("is-open");
-        }
-      }, { once: true });
-    }
-
-    function deleteTask(id) {
-      tasks = tasks.filter(t => t.id !== id);
-      renderBoard();
-    }
-
-    function deleteColumn(id) {
-      columns = columns.filter(c => c.id !== id);
-      tasks = tasks.filter(t => t.columnId !== id);
-      renderBoard();
-    }
-
-    function editColumn(id) {
-      const c = columns.find(x => x.id === id);
-      if (!c) return;
-      const newName = prompt("Nouveau nom de la colonne :", c.name);
-      if (newName) c.name = newName;
-      renderBoard();
-    }
-
-    // Démarrage
-    renderBoard();
   </script>
 </body>
 </html>
