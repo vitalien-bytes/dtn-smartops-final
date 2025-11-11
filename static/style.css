@@ -1,154 +1,441 @@
+/* ===============================
+   🌟 DTN SmartOps - Style Global
+   =============================== */
+
 :root {
-  --orange: #f25c05;
-  --black: #222;
-  --bg: #f5f5f5;
-  --card: #fff;
-  --shadow: 0 4px 10px rgba(0,0,0,0.1);
+  --orange: #ff6a3d;
+  --orange-light: #ffd1c3;
+  --grey: #f5f5f5;
+  --text-dark: #1c1c1c;
+  --border: #e4e4e4;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --radius: 10px;
+  --font: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: var(--font);
 }
 
 body {
+  background: var(--grey);
+  color: var(--text-dark);
   margin: 0;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.header {
+/* ===============================
+   🔹 HEADER / TOPBAR
+   =============================== */
+.topbar {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  box-shadow: var(--shadow);
-  padding: 10px 20px;
+  padding: 14px 22px;
+  background: #fff3ee;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 20px var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
-.logo-area {
+.brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logo {
-  height: 50px;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
-h1 { font-size: 24px; margin: 0; }
-h1 .black { color: var(--black); }
-h1 .orange { color: var(--orange); }
-
-.logout {
-  background: var(--orange);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
+.brand-text {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #111;
 }
 
+.brand-text .accent {
+  color: var(--orange);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===============================
+   🧱 BOARD / COLONNES
+   =============================== */
 .board {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 20px;
-  padding: 20px;
-  overflow-x: auto;
-}
-
-.add-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.add-col input {
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.add-col button {
-  background: var(--orange);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px;
-  cursor: pointer;
+  padding: 24px;
 }
 
 .column {
-  background: var(--card);
-  border-radius: 10px;
-  box-shadow: var(--shadow);
-  padding: 10px;
-  width: 260px;
-  min-width: 260px;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  transition: 0.2s ease;
+}
+
+.column:hover {
+  transform: translateY(-2px);
+}
+
+.column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.column-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  outline: none;
+}
+
+.cards {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  min-height: 60px;
+}
+
+.column-foot {
+  padding: 10px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===============================
+   💳 CARDS
+   =============================== */
+.card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: 0 3px 10px var(--shadow);
+  position: relative;
+  cursor: grab;
+  transition: 0.2s ease;
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  background: #f3f6ff;
+  border: 1px solid #e3e9ff;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 4px 8px;
+  color: #333;
+}
+
+.card .card-menu {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+}
+
+/* ===============================
+   🧭 MENUS
+   =============================== */
+.menu {
+  position: relative;
+}
+
+.icon-btn {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: #f8f8f8;
+}
+
+.menu-list {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  display: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.menu-list.open {
+  display: block;
+}
+
+.menu-list button {
+  display: block;
+  width: 160px;
+  text-align: left;
+  padding: 10px 12px;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.menu-list button:hover {
+  background: #f8f8f8;
+}
+
+/* ===============================
+   🧩 INPUTS & BOUTONS
+   =============================== */
+.input {
+  width: 100%;
+  height: 38px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: 2px solid #ffd9cd;
+}
+
+.btn {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn:hover {
+  background: #fafafa;
+}
+
+.btn-primary {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #ff825b;
+}
+
+.btn-accent {
+  background: var(--orange-light);
+  border-color: var(--orange-light);
+  color: #7a2d17;
+}
+
+.btn-danger {
+  background: #fff0f0;
+  border-color: #ffdcdc;
+  color: #b30000;
+}
+
+/* ===============================
+   🎚️ DRAWER (Nouvelle tâche)
+   =============================== */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -440px;
+  width: 440px;
+  height: 100vh;
+  background: #fff;
+  border-left: 1px solid #eee;
+  box-shadow: -16px 0 40px rgba(0, 0, 0, 0.08);
+  transition: right 0.25s ease;
+  z-index: 1001;
   display: flex;
   flex-direction: column;
 }
 
-.column-header {
+.drawer.open {
+  right: 0;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.form {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hidden {
+  display: none;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 1000;
+}
+
+.backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===============================
+   🪟 MODALE (Fiche client)
+   =============================== */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-card {
+  width: min(560px, 92vw);
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eee;
+  background: #fff7f4;
+}
+
+.modal-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-actions {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #eee;
+}
+
+.kv {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
 }
 
-.menu-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
+.kv span {
+  color: #666;
+  font-size: 14px;
 }
 
-.menu {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
+.kv b {
+  color: #222;
+  font-weight: 600;
 }
 
-.menu-btn:hover + .menu,
-.menu:hover {
-  display: flex;
+/* ===============================
+   ⚙️ SCROLLBAR & RESPONSIVE
+   =============================== */
+::-webkit-scrollbar {
+  width: 10px;
 }
 
-.card {
-  background: var(--card);
+::-webkit-scrollbar-thumb {
+  background-color: #ddd;
   border-radius: 8px;
-  padding: 10px;
-  margin: 8px 0;
-  box-shadow: var(--shadow);
-  cursor: grab;
 }
 
-.card.dragging {
-  opacity: 0.6;
-  transform: rotate(3deg);
+::-webkit-scrollbar-thumb:hover {
+  background-color: #bbb;
 }
 
-.card-menu {
-  display: none;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.card:hover .card-menu {
-  display: flex;
-}
-
-.add-task {
-  display: flex;
-  gap: 6px;
-  margin-top: auto;
-}
-
-.add-task input {
-  flex: 1;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.add-task button {
-  background: var(--orange);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
+@media (max-width: 768px) {
+  .drawer {
+    width: 100%;
+  }
+  .topbar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
 }
