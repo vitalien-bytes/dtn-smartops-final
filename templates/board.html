@@ -2,61 +2,40 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>DTN SmartOps</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <title>{{ board.title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
   <header class="topbar">
     <div class="brand">
       <img src="/static/logo.png" alt="DTN SmartOps" class="brand__logo">
       <h1 class="brand__title">
-        <span class="brand__title--black">DTN</span><span class="brand__title--orange">SmartOps</span>
+        <span class="brand__title--black">DTN</span>
+        <span class="brand__title--orange">SmartOps</span>
       </h1>
     </div>
-    <button class="btn btn--primary" id="addTaskBtn">+ Nouvelle tâche</button>
   </header>
 
-  <main class="board" id="board">
-    <!-- Colonnes dynamiques ici -->
-  </main>
-
-  <!-- Modal ajout tâche -->
-  <dialog id="taskModal" class="modal">
-    <div class="modal__head">
-      <h3>Nouvelle tâche / Client</h3>
-      <button class="modal__close" onclick="closeModal()">✖</button>
+  <main class="board-container">
+    <div class="add-column">
+      <input type="text" id="newColumnName" placeholder="Nom de la colonne..." class="input">
+      <button class="btn btn--primary" id="addColumnBtn">Ajouter colonne</button>
     </div>
 
+    <div class="board" id="board"></div>
+  </main>
+
+  <dialog id="taskModal" class="modal">
+    <div class="modal__head">
+      <h3 id="modalTitle">Nouvelle tâche / Client</h3>
+      <button class="modal__close" onclick="closeModal()">✖</button>
+    </div>
     <form id="taskForm" class="grid">
-      <div class="field">
-        <span>Nom</span>
-        <input type="text" id="nom" class="input" required>
-      </div>
-      <div class="field">
-        <span>Prénom</span>
-        <input type="text" id="prenom" class="input" required>
-      </div>
-      <div class="field">
-        <span>Adresse postale</span>
-        <input type="text" id="adresse" class="input">
-      </div>
-      <div class="field">
-        <span>Date de RDV</span>
-        <input type="date" id="date_rdv" class="input">
-      </div>
-      <div class="field field--full">
-        <span>Type de chantier</span>
-        <select id="job_type" class="input">
-          <option>Électricité</option>
-          <option>Fibre</option>
-          <option>Cuivre</option>
-          <option>PV / Solaire</option>
-          <option>GC / Viabilisation</option>
-          <option>Autre</option>
-        </select>
-      </div>
+      <div class="field"><span>Nom</span><input type="text" name="nom" class="input" required></div>
+      <div class="field"><span>Prénom</span><input type="text" name="prenom" class="input" required></div>
+      <div class="field"><span>Adresse postale</span><input type="text" name="adresse" class="input"></div>
+      <div class="field"><span>Date de RDV</span><input type="date" name="date_rdv" class="input"></div>
       <div class="modal__foot field--full">
         <button type="button" class="btn btn--ghost" onclick="closeModal()">Annuler</button>
         <button type="submit" class="btn btn--primary">Enregistrer</button>
@@ -66,98 +45,126 @@
 
   <script>
     const board = document.getElementById("board");
+    const addColumnBtn = document.getElementById("addColumnBtn");
+    const newColumnNameInput = document.getElementById("newColumnName");
+
     const modal = document.getElementById("taskModal");
-    const form = document.getElementById("taskForm");
-    const addBtn = document.getElementById("addTaskBtn");
+    const form  = document.getElementById("taskForm");
 
+    let columns = [];
     let tasks = [];
+    let currentEditTask = null;
+    let currentColumnId = null;
 
-    function openModal() {
+    function openModal(columnId, taskId=null) {
+      currentColumnId = columnId;
+      currentEditTask = taskId;
+      if (taskId) {
+        const t = tasks.find(x => x.id === taskId);
+        if (t) {
+          form.nom.value = t.nom;
+          form.prenom.value = t.prenom;
+          form.adresse.value = t.adresse;
+          form.date_rdv.value = t.date_rdv;
+        }
+      } else {
+        form.reset();
+      }
       modal.showModal();
     }
+
     function closeModal() {
       modal.close();
+      currentEditTask = null;
+      currentColumnId = null;
     }
-
-    addBtn.addEventListener("click", openModal);
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const fd = new FormData(form);
       const newTask = {
-        id: Date.now(),
-        nom: form.nom.value,
-        prenom: form.prenom.value,
-        adresse: form.adresse.value,
-        date_rdv: form.date_rdv.value,
-        job_type: form.job_type.value
+        id: currentEditTask || Date.now(),
+        columnId: currentColumnId,
+        nom: fd.get("nom") || "",
+        prenom: fd.get("prenom") || "",
+        adresse: fd.get("adresse") || "",
+        date_rdv: fd.get("date_rdv") || ""
       };
-      tasks.push(newTask);
-      renderBoard();
+
+      if (currentEditTask) {
+        const idx = tasks.findIndex(t => t.id === currentEditTask);
+        if (idx !== -1) tasks[idx] = newTask;
+      } else {
+        tasks.push(newTask);
+      }
+
       closeModal();
-      form.reset();
+      renderBoard();
+    });
+
+    addColumnBtn.addEventListener("click", () => {
+      const name = newColumnNameInput.value.trim();
+      if (!name) return;
+      const id = Date.now();
+      columns.push({ id, name });
+      newColumnNameInput.value = "";
+      renderBoard();
     });
 
     function renderBoard() {
-      board.innerHTML = '';
-      const grouped = {};
-      tasks.forEach(task => {
-        if (!grouped[task.job_type]) grouped[task.job_type] = [];
-        grouped[task.job_type].push(task);
-      });
-
-      Object.entries(grouped).forEach(([type, list]) => {
-        const col = document.createElement("div");
-        col.className = "column";
-        col.innerHTML = `
+      board.innerHTML = "";
+      columns.forEach(col => {
+        const colTasks = tasks.filter(t => t.columnId === col.id);
+        const colElement = document.createElement("div");
+        colElement.className = "column";
+        colElement.innerHTML = `
           <div class="column__head">
-            <h2 class="column__title">${type}</h2>
+            <h2 contenteditable="false" class="column__title">${col.name}</h2>
+            <div class="menu">
+              <button class="menu__btn" onclick="toggleMenu(event)">⋮</button>
+              <div class="menu__list">
+                <button class="menu__item" onclick="editColumn(${col.id})">Renommer</button>
+                <button class="menu__item" onclick="deleteColumn(${col.id})">Supprimer</button>
+              </div>
+            </div>
           </div>
-          <div class="cards">
-            ${list.map(task => renderCard(task)).join("")}
+          <div class="cards">${colTasks.map(renderCardHTML).join("")}</div>
+          <div class="add-task">
+            <input type="text" placeholder="Nouvelle tâche..." class="input" id="taskInput-${col.id}">
+            <button class="btn btn--primary" onclick="openModal(${col.id})">+</button>
           </div>
         `;
-        board.appendChild(col);
+        board.appendChild(colElement);
       });
     }
 
-    function renderCard(data) {
-      const colorMap = {
-        "Électricité": "#f8b400",
-        "Fibre": "#3fa9f5",
-        "Cuivre": "#c08457",
-        "PV / Solaire": "#ff8b3d",
-        "GC / Viabilisation": "#8bc34a",
-        "Autre": "#9e9e9e"
-      };
-      const bandColor = colorMap[data.job_type] || "#ccc";
-      const fullName = `${data.prenom} ${data.nom}`;
-
+    function renderCardHTML(t) {
+      const fullName = `${t.prenom} ${t.nom}`.trim();
       return `
         <div class="card">
-          <div class="card__band" style="background:${bandColor}"></div>
           <div class="card__body">
             <div class="card__info">
-              <div class="card__title">${fullName}</div>
-              <div class="card__desc">${data.adresse || ''}</div>
+              <div class="card__title">${fullName || "Client"}</div>
+              <div class="card__desc">${t.adresse || ""}</div>
             </div>
             <div class="menu">
               <button class="menu__btn" onclick="toggleMenu(event)">⋮</button>
               <div class="menu__list">
-                <button class="menu__item" onclick="editTask(${data.id})">Modifier</button>
-                <button class="menu__item" onclick="deleteTask(${data.id})">Supprimer</button>
-                <button class="menu__item">Archiver</button>
+                <button class="menu__item" onclick="openModal(${t.columnId}, ${t.id})">Modifier</button>
+                <button class="menu__item" onclick="deleteTask(${t.id})">Supprimer</button>
               </div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function toggleMenu(e) {
       const menu = e.target.nextElementSibling;
       menu.classList.toggle("is-open");
       document.addEventListener("click", (evt) => {
-        if (!menu.contains(evt.target) && evt.target !== e.target) menu.classList.remove("is-open");
+        if (!menu.contains(evt.target) && evt.target !== e.target) {
+          menu.classList.remove("is-open");
+        }
       }, { once: true });
     }
 
@@ -166,19 +173,21 @@
       renderBoard();
     }
 
-    function editTask(id) {
-      const t = tasks.find(t => t.id === id);
-      if (t) {
-        form.nom.value = t.nom;
-        form.prenom.value = t.prenom;
-        form.adresse.value = t.adresse;
-        form.date_rdv.value = t.date_rdv;
-        form.job_type.value = t.job_type;
-        deleteTask(id);
-        openModal();
-      }
+    function deleteColumn(id) {
+      columns = columns.filter(c => c.id !== id);
+      tasks = tasks.filter(t => t.columnId !== id);
+      renderBoard();
     }
 
+    function editColumn(id) {
+      const c = columns.find(x => x.id === id);
+      if (!c) return;
+      const newName = prompt("Nouveau nom de la colonne :", c.name);
+      if (newName) c.name = newName;
+      renderBoard();
+    }
+
+    // Démarrage
     renderBoard();
   </script>
 </body>
