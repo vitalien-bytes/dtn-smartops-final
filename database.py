@@ -1,13 +1,13 @@
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Remplacement par le driver asyncpg
+# Utiliser pg8000 à la place de psycopg2
 if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://")
 
-engine = create_async_engine(DATABASE_URL, echo=False)
-SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
+engine = create_engine(DATABASE_URL, echo=False)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
