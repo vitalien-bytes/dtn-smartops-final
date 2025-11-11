@@ -1,119 +1,338 @@
 <!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ board.title }}</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ board.title }}</title>
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
-
-<header class="topbar">
-    <div class="logo-title">
-        <img src="/static/logo.png" alt="Logo DTN" class="logo">
-        <h1><span class="black">DTN</span> <span class="orange">SmartOps</span></h1>
+<body class="light">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/static/logo.png" alt="logo DTN SmartOps" class="brand__logo" />
+      <h1 class="brand__title">
+        <span class="brand__title--black">DTN</span>
+        <span class="brand__title--orange"> SmartOps</span>
+      </h1>
     </div>
+    <form action="/logout" method="post">
+      <button class="btn btn--ghost">Déconnexion</button>
+    </form>
+  </header>
 
-    <div class="header-actions">
-        <button id="darkToggle" class="mode-toggle">🌙</button>
-        <a href="/logout"><button class="logout-btn">Déconnexion</button></a>
-    </div>
-</header>
+  <!-- Zone ajout colonne -->
+  <section class="addcol">
+    <input id="newColName" class="input" placeholder="Nouvelle section…" />
+    <button id="addColBtn" class="btn btn--primary">Ajouter</button>
+  </section>
 
-<main class="board-container">
-    <aside class="sidebar">
-        <h3>Gestion</h3>
-        <ul>
-            <li><a href="/board">Tableaux</a></li>
-            <li><a href="#">Tâches archivées</a></li>
-            <li><a href="#">Utilisateurs</a></li>
-            <li><a href="#">Statistiques</a></li>
-        </ul>
-    </aside>
+  <!-- Board -->
+  <main id="board" class="board">
+    {% for col in columns %}
+    <section class="column" data-col-id="{{ col.id }}">
+      <header class="column__head">
+        <h2 class="column__title">{{ col.title }}</h2>
 
-    <section class="board">
-        <!-- Formulaire pour ajouter une colonne -->
-        <form method="post" action="/add_column" class="add-col-form">
-            <input name="title" placeholder="Nouvelle section..." required>
-            <button type="submit">Ajouter</button>
-        </form>
-
-        <!-- Colonnes -->
-        {% for col in columns %}
-        <div class="column" data-column-id="{{ col.id }}">
-            <div class="column-header">
-                <h2>{{ col.title }}</h2>
-                <div class="dropdown">
-                    <button class="menu-btn">⋮</button>
-                    <div class="dropdown-content">
-                        <form method="post" action="/rename_column/{{ col.id }}">
-                            <input name="new_title" placeholder="Renommer...">
-                            <button type="submit">OK</button>
-                        </form>
-                        <form method="post" action="/archive_column/{{ col.id }}">
-                            <button type="submit">Archiver</button>
-                        </form>
-                        <form method="post" action="/delete_column/{{ col.id }}">
-                            <button type="submit" class="danger">Supprimer</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cards" data-column-id="{{ col.id }}">
-                {% for card in col.cards %}
-                <article class="card" draggable="true" data-card-id="{{ card.id }}">
-                    <p>{{ card.description }}</p>
-                    <form method="post" action="/delete_card/{{ card.id }}">
-                        <button class="delete-btn" title="Supprimer la tâche">✕</button>
-                    </form>
-                </article>
-                {% endfor %}
-            </div>
-
-            <form method="post" action="/add_card/{{ col.id }}" class="add-card-form">
-                <input name="description" placeholder="Nouvelle tâche..." required>
-                <button type="submit">+</button>
-            </form>
+        <div class="menu">
+          <button class="menu__btn" aria-label="menu colonne">⋮</button>
+          <div class="menu__list">
+            <button class="menu__item js-rename-col">Renommer</button>
+            <button class="menu__item js-delete-col">Supprimer</button>
+          </div>
         </div>
+      </header>
+
+      <div class="cards js-dropzone">
+        {% set col_cards = cards[col.id] if cards and col.id in cards else [] %}
+        {% for card in col_cards %}
+        <article class="card" draggable="true">
+          <div class="card__title">{{ card.title or 'Sans titre' }}</div>
+          {% if card.description %}<div class="card__desc">{{ card.description }}</div>{% endif %}
+        </article>
         {% endfor %}
+      </div>
+
+      <footer class="column__foot">
+        <button class="btn btn--add js-open-modal">+ Nouvelle tâche</button>
+      </footer>
     </section>
-</main>
+    {% endfor %}
+  </main>
 
-<!-- =====================
-     SCRIPTS
-====================== -->
-<script>
-    // ---- DRAG & DROP ----
-    const cards = document.querySelectorAll('.card');
-    const columns = document.querySelectorAll('.cards');
+  <!-- Modal nouvelle tâche (visuel, pas de BDD) -->
+  <dialog id="taskModal" class="modal">
+    <form method="dialog" id="taskForm" class="modal__content">
+      <header class="modal__head">
+        <h3>Nouvelle tâche / Client</h3>
+        <button type="button" class="modal__close" aria-label="Fermer">×</button>
+      </header>
 
-    cards.forEach(card => {
-        card.addEventListener('dragstart', e => e.dataTransfer.setData('cardId', card.dataset.cardId));
-    });
+      <div class="grid">
+        <label class="field">
+          <span>Nom</span>
+          <input class="input" name="last_name" required />
+        </label>
+        <label class="field">
+          <span>Prénom</span>
+          <input class="input" name="first_name" />
+        </label>
 
-    columns.forEach(col => {
-        col.addEventListener('dragover', e => e.preventDefault());
-        col.addEventListener('drop', async e => {
-            e.preventDefault();
-            const cardId = e.dataTransfer.getData('cardId');
-            const newColId = col.dataset.columnId;
-            const response = await fetch(`/move_card/${cardId}/${newColId}`, { method: 'POST' });
-            if (response.ok) location.reload();
-        });
-    });
+        <label class="field">
+          <span>Téléphone</span>
+          <input class="input" name="phone" inputmode="tel" />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input class="input" name="email" type="email" />
+        </label>
 
-    // ---- MODE SOMBRE / CLAIR ----
-    const toggle = document.getElementById('darkToggle');
-    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        <label class="field field--full">
+          <span>Adresse</span>
+          <input class="input" name="address" />
+        </label>
 
-    toggle.onclick = () => {
-        document.body.classList.toggle('dark');
-        const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
-        localStorage.setItem('theme', theme);
-        toggle.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+        <label class="field">
+          <span>Type de chantier</span>
+          <select class="input" name="job_type">
+            <option>Électricité</option>
+            <option>Fibre</option>
+            <option>Cuivre</option>
+            <option>PV / Solaire</option>
+            <option>GC / Viabilisation</option>
+            <option>Autre</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Date de RDV</span>
+          <input class="input" type="date" name="rdv_date" />
+        </label>
+
+        <label class="field field--full">
+          <span>Notes</span>
+          <textarea class="input" name="notes" rows="3"></textarea>
+        </label>
+      </div>
+
+      <footer class="modal__foot">
+        <button type="button" class="btn btn--ghost modal__close">Annuler</button>
+        <button class="btn btn--primary" value="default">Ajouter la carte</button>
+      </footer>
+      <input type="hidden" name="target_col_id" id="target_col_id" />
+    </form>
+  </dialog>
+
+  <script>
+    // ---------- Utilitaires ----------
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    // Persistance simple côté navigateur
+    const STORAGE_KEY = 'dtnSmartOps';
+    const saveState = () => {
+      const data = $$('.column').map(col => ({
+        id: col.dataset.colId,
+        title: $('.column__title', col).textContent.trim(),
+        cards: $$('.card', col).map(c => ({
+          html: c.innerHTML  // on garde simple côté visuel
+        }))
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     };
-</script>
+    const loadState = () => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }
+      catch { return null; }
+    };
 
+    // ---------- Menus colonnes ----------
+    function bindColumnMenus(col) {
+      const btn = $('.menu__btn', col);
+      const list = $('.menu__list', col);
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        list.classList.toggle('is-open');
+      });
+      document.addEventListener('click', () => list.classList.remove('is-open'));
+
+      $('.js-rename-col', col).addEventListener('click', () => {
+        const titleEl = $('.column__title', col);
+        const newName = prompt('Nouveau nom de la colonne :', titleEl.textContent.trim());
+        if (newName) {
+          titleEl.textContent = newName;
+          saveState();
+        }
+      });
+
+      $('.js-delete-col', col).addEventListener('click', () => {
+        if (confirm('Supprimer cette colonne ?')) {
+          col.remove();
+          saveState();
+        }
+      });
+    }
+
+    // ---------- Drag & drop cartes ----------
+    function bindCardDrag(card) {
+      card.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', 'drag-card');
+        card.classList.add('is-drag');
+        window.__draggingCard = card;
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('is-drag');
+        window.__draggingCard = null;
+        saveState();
+      });
+    }
+    function bindDropzone(zone) {
+      zone.addEventListener('dragover', e => e.preventDefault());
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        if (window.__draggingCard) {
+          zone.appendChild(window.__draggingCard);
+          saveState();
+        }
+      });
+    }
+
+    // ---------- Modal nouvelle carte ----------
+    const modal = $('#taskModal');
+    const form  = $('#taskForm');
+
+    function openModalForColumn(colId) {
+      $('#target_col_id').value = colId;
+      modal.showModal();
+      $('input[name="last_name"]').focus();
+    }
+    function closeModal() { modal.close(); }
+
+    $$('.modal__close').forEach(b => b.addEventListener('click', closeModal));
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const data = Object.fromEntries(new FormData(form).entries());
+      const zone = $(`.column[data-col-id="${data.target_col_id}"] .cards`);
+      if (!zone) return closeModal();
+
+      // Construction visuelle de la carte
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.setAttribute('draggable', 'true');
+
+      const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Client';
+      const top = `<div class="card__title">${fullName}</div>`;
+      const meta =
+        `<ul class="card__meta">
+           ${data.phone ? `<li>📞 ${data.phone}</li>` : ''}
+           ${data.email ? `<li>✉️ ${data.email}</li>` : ''}
+           ${data.rdv_date ? `<li>📅 RDV : ${data.rdv_date}</li>` : ''}
+           ${data.job_type ? `<li>🛠 ${data.job_type}</li>` : ''}
+         </ul>`;
+      const addr = data.address ? `<div class="card__desc">📍 ${data.address}</div>` : '';
+      const notes = data.notes ? `<div class="card__desc">${data.notes}</div>` : '';
+
+      card.innerHTML = top + meta + addr + notes;
+      bindCardDrag(card);
+      zone.appendChild(card);
+
+      saveState();
+      closeModal();
+      form.reset();
+    });
+
+    // ---------- Boutons + de colonnes ----------
+    function bindAddButtons() {
+      $$('.js-open-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const col = btn.closest('.column');
+          openModalForColumn(col.dataset.colId);
+        });
+      });
+    }
+
+    // ---------- Ajout colonne ----------
+    $('#addColBtn').addEventListener('click', () => {
+      const name = $('#newColName').value.trim();
+      if (!name) return;
+      const id = 'col_' + Math.random().toString(36).slice(2, 8);
+
+      const tpl = document.createElement('section');
+      tpl.className = 'column';
+      tpl.dataset.colId = id;
+      tpl.innerHTML = `
+        <header class="column__head">
+          <h2 class="column__title">${name}</h2>
+          <div class="menu">
+            <button class="menu__btn" aria-label="menu colonne">⋮</button>
+            <div class="menu__list">
+              <button class="menu__item js-rename-col">Renommer</button>
+              <button class="menu__item js-delete-col">Supprimer</button>
+            </div>
+          </div>
+        </header>
+        <div class="cards js-dropzone"></div>
+        <footer class="column__foot">
+          <button class="btn btn--add js-open-modal">+ Nouvelle tâche</button>
+        </footer>`;
+      $('#board').appendChild(tpl);
+
+      bindColumnMenus(tpl);
+      bindDropzone($('.js-dropzone', tpl));
+      $('.js-open-modal', tpl).addEventListener('click', () => openModalForColumn(id));
+
+      $('#newColName').value = '';
+      saveState();
+    });
+
+    // ---------- Initialisation ----------
+    (function init() {
+      // recharge éventuel (visuel) depuis localStorage
+      const state = loadState();
+      if (state) {
+        const board = $('#board');
+        board.innerHTML = '';
+        state.forEach(c => {
+          const sec = document.createElement('section');
+          sec.className = 'column';
+          sec.dataset.colId = c.id;
+          sec.innerHTML = `
+            <header class="column__head">
+              <h2 class="column__title">${c.title}</h2>
+              <div class="menu">
+                <button class="menu__btn" aria-label="menu colonne">⋮</button>
+                <div class="menu__list">
+                  <button class="menu__item js-rename-col">Renommer</button>
+                  <button class="menu__item js-delete-col">Supprimer</button>
+                </div>
+              </div>
+            </header>
+            <div class="cards js-dropzone"></div>
+            <footer class="column__foot">
+              <button class="btn btn--add js-open-modal">+ Nouvelle tâche</button>
+            </footer>`;
+          board.appendChild(sec);
+          const zone = $('.js-dropzone', sec);
+          (c.cards || []).forEach(cd => {
+            const art = document.createElement('article');
+            art.className = 'card';
+            art.setAttribute('draggable', 'true');
+            art.innerHTML = cd.html;
+            bindCardDrag(art);
+            zone.appendChild(art);
+          });
+        });
+      }
+
+      // Binder le DOM courant (soit rendu serveur, soit restauré)
+      $$('.column').forEach(col => {
+        bindColumnMenus(col);
+        bindDropzone($('.js-dropzone', col));
+      });
+      $$('.card').forEach(bindCardDrag);
+      bindAddButtons();
+    })();
+  </script>
 </body>
 </html>
