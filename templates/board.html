@@ -1,75 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ board.title }}</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script>
-        // Ouvre ou ferme un menu colonne
-        function toggleMenu(id) {
-            const menu = document.getElementById("menu-" + id);
-            menu.style.display = menu.style.display === "block" ? "none" : "block";
-        }
-    </script>
 </head>
-<body>
-<header>
+<body class="light">
+
+<header class="topbar">
     <div class="logo-title">
-        <img src="/static/logo.png" alt="logo">
-        <h1><span style="color:#000;">DTN</span><span style="color:#ff6600;"> SmartOps</span></h1>
+        <img src="/static/logo.png" alt="Logo" class="logo">
+        <h1><span style="color:black;">DTN</span> <span style="color:orange;">SmartOps</span></h1>
     </div>
-    <div class="menu">
-        <a href="/">Déconnexion</a>
-        <a href="/board">Actualiser</a>
-    </div>
+    <a href="/logout"><button class="logout-btn">Déconnexion</button></a>
 </header>
 
 <main class="board">
-    <!-- Ajouter une nouvelle colonne -->
-    <section class="new-column">
-        <form method="post" action="/add_column">
-            <input name="title" placeholder="Nom de la colonne..." required>
-            <button type="submit">➕ Ajouter colonne</button>
-        </form>
-    </section>
+    <form method="post" action="/add_column" class="add-col-form">
+        <input name="title" placeholder="Nom de la colonne..." required>
+        <button type="submit">Ajouter colonne</button>
+    </form>
 
-    {% for column in columns %}
-    <section class="column">
+    {% for col in columns %}
+    <section class="column" data-column-id="{{ col.id }}">
         <div class="column-header">
-            <h2>{{ column.title }}</h2>
+            <h2>{{ col.title }}</h2>
             <div class="dropdown">
-                <button class="menu-btn" onclick="toggleMenu('{{ column.id }}')">⋮</button>
-                <div id="menu-{{ column.id }}" class="dropdown-menu">
-                    <form method="post" action="/delete_column/{{ column.id }}">
-                        <button type="submit">🗑 Supprimer</button>
+                <button class="menu-btn">⋮</button>
+                <div class="dropdown-content">
+                    <form method="post" action="/delete_column/{{ col.id }}">
+                        <button type="submit">Supprimer</button>
                     </form>
-                    <form method="post" action="/edit_column/{{ column.id }}">
-                        <input type="text" name="new_title" placeholder="Nouveau nom" required>
-                        <button type="submit">✏️ Modifier</button>
-                    </form>
-                    <form method="post" action="/archive_column/{{ column.id }}">
-                        <button type="submit">📦 Archiver</button>
-                    </form>
+                    <button onclick="editColumn({{ col.id }})">Modifier</button>
+                    <button onclick="archiveColumn({{ col.id }})">Archiver</button>
                 </div>
             </div>
         </div>
 
-        {% for card in column.cards %}
-        <div class="card">
-            {{ card.title }}
-            <form method="post" action="/delete_card/{{ card.id }}">
-                <button title="Supprimer carte">❌</button>
-            </form>
+        <div class="cards" data-column-id="{{ col.id }}">
+            {% for card in col.cards %}
+            <article class="card" draggable="true" data-card-id="{{ card.id }}">
+                <p>{{ card.description }}</p>
+                <form method="post" action="/delete_card/{{ card.id }}">
+                    <button class="delete-btn">✕</button>
+                </form>
+            </article>
+            {% endfor %}
         </div>
-        {% endfor %}
 
-        <!-- Ajouter une carte -->
-        <form method="post" action="/add_card/{{ column.id }}">
-            <input name="title" placeholder="Nouvelle tâche..." required>
+        <form method="post" action="/add_card/{{ col.id }}" class="add-card-form">
+            <input name="description" placeholder="Nouvelle tâche..." required>
             <button type="submit">+</button>
         </form>
     </section>
     {% endfor %}
 </main>
+
+<script>
+    // --- Drag & Drop des cartes ---
+    const cards = document.querySelectorAll('.card');
+    const columns = document.querySelectorAll('.cards');
+
+    cards.forEach(card => {
+        card.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('cardId', card.dataset.cardId);
+        });
+    });
+
+    columns.forEach(col => {
+        col.addEventListener('dragover', e => e.preventDefault());
+        col.addEventListener('drop', async e => {
+            e.preventDefault();
+            const cardId = e.dataTransfer.getData('cardId');
+            const newColId = col.dataset.columnId;
+            const response = await fetch(`/move_card/${cardId}/${newColId}`, { method: 'POST' });
+            if (response.ok) location.reload();
+        });
+    });
+</script>
+
 </body>
 </html>
