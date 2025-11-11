@@ -1,185 +1,162 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>DTN SmartOps</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+<script>
+  const board = document.getElementById("board");
+  const modal = document.getElementById("taskModal");
+  const form = document.getElementById("taskForm");
+  const addBtn = document.getElementById("addTaskBtn");
 
-  <header class="topbar">
-    <div class="brand">
-      <img src="/static/logo.png" alt="DTN SmartOps" class="brand__logo">
-      <h1 class="brand__title">
-        <span class="brand__title--black">DTN</span><span class="brand__title--orange">SmartOps</span>
-      </h1>
-    </div>
-    <button class="btn btn--primary" id="addTaskBtn">+ Nouvelle tâche</button>
-  </header>
+  const columnTypes = [
+    "Électricité",
+    "Fibre",
+    "Cuivre",
+    "PV / Solaire",
+    "GC / Viabilisation",
+    "Autre"
+  ];
 
-  <main class="board" id="board">
-    <!-- Colonnes dynamiques ici -->
-  </main>
+  let tasks = [];
+  let draggedTaskId = null;
 
-  <!-- Modal ajout tâche -->
-  <dialog id="taskModal" class="modal">
-    <div class="modal__head">
-      <h3>Nouvelle tâche / Client</h3>
-      <button class="modal__close" onclick="closeModal()">✖</button>
-    </div>
+  function openModal() { modal.showModal(); }
+  function closeModal() { modal.close(); }
 
-    <form id="taskForm" class="grid">
-      <div class="field">
-        <span>Nom</span>
-        <input type="text" id="nom" class="input" required>
-      </div>
-      <div class="field">
-        <span>Prénom</span>
-        <input type="text" id="prenom" class="input" required>
-      </div>
-      <div class="field">
-        <span>Adresse postale</span>
-        <input type="text" id="adresse" class="input">
-      </div>
-      <div class="field">
-        <span>Date de RDV</span>
-        <input type="date" id="date_rdv" class="input">
-      </div>
-      <div class="field field--full">
-        <span>Type de chantier</span>
-        <select id="job_type" class="input">
-          <option>Électricité</option>
-          <option>Fibre</option>
-          <option>Cuivre</option>
-          <option>PV / Solaire</option>
-          <option>GC / Viabilisation</option>
-          <option>Autre</option>
-        </select>
-      </div>
-      <div class="modal__foot field--full">
-        <button type="button" class="btn btn--ghost" onclick="closeModal()">Annuler</button>
-        <button type="submit" class="btn btn--primary">Enregistrer</button>
-      </div>
-    </form>
-  </dialog>
+  addBtn.addEventListener("click", openModal);
 
-  <script>
-    const board = document.getElementById("board");
-    const modal = document.getElementById("taskModal");
-    const form = document.getElementById("taskForm");
-    const addBtn = document.getElementById("addTaskBtn");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const newTask = {
+      id: Date.now(),
+      nom: form.nom.value,
+      prenom: form.prenom.value,
+      adresse: form.adresse.value,
+      date_rdv: form.date_rdv.value,
+      job_type: form.job_type.value
+    };
+    tasks.push(newTask);
+    renderBoard();
+    closeModal();
+    form.reset();
+  });
 
-    let tasks = [];
+  function renderBoard() {
+    board.innerHTML = '';
 
-    function openModal() {
-      modal.showModal();
-    }
-    function closeModal() {
-      modal.close();
-    }
+    columnTypes.forEach(type => {
+      const col = document.createElement("div");
+      col.className = "column";
+      col.dataset.type = type;
 
-    addBtn.addEventListener("click", openModal);
+      col.addEventListener("dragover", handleDragOver);
+      col.addEventListener("dragleave", handleDragLeave);
+      col.addEventListener("drop", handleDrop);
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const newTask = {
-        id: Date.now(),
-        nom: form.nom.value,
-        prenom: form.prenom.value,
-        adresse: form.adresse.value,
-        date_rdv: form.date_rdv.value,
-        job_type: form.job_type.value
-      };
-      tasks.push(newTask);
-      renderBoard();
-      closeModal();
-      form.reset();
+      const colTasks = tasks.filter(t => t.job_type === type);
+
+      col.innerHTML = `
+        <div class="column__head">
+          <h2 class="column__title">${type}</h2>
+        </div>
+        <div class="cards">
+          ${colTasks.map(task => renderCard(task)).join("")}
+        </div>
+      `;
+      board.appendChild(col);
     });
+  }
 
-    function renderBoard() {
-      board.innerHTML = '';
-      const grouped = {};
-      tasks.forEach(task => {
-        if (!grouped[task.job_type]) grouped[task.job_type] = [];
-        grouped[task.job_type].push(task);
-      });
+  function renderCard(data) {
+    const colorMap = {
+      "Électricité": "#f8b400",
+      "Fibre": "#3fa9f5",
+      "Cuivre": "#c08457",
+      "PV / Solaire": "#ff8b3d",
+      "GC / Viabilisation": "#8bc34a",
+      "Autre": "#9e9e9e"
+    };
+    const bandColor = colorMap[data.job_type] || "#ccc";
+    const fullName = `${data.prenom} ${data.nom}`;
 
-      Object.entries(grouped).forEach(([type, list]) => {
-        const col = document.createElement("div");
-        col.className = "column";
-        col.innerHTML = `
-          <div class="column__head">
-            <h2 class="column__title">${type}</h2>
+    return `
+      <div class="card" draggable="true"
+        ondragstart="handleDragStart(event, ${data.id})"
+        ondragend="handleDragEnd(event)">
+        <div class="card__band" style="background:${bandColor}"></div>
+        <div class="card__body">
+          <div class="card__info">
+            <div class="card__title">${fullName}</div>
+            <div class="card__desc">${data.adresse || ''}</div>
           </div>
-          <div class="cards">
-            ${list.map(task => renderCard(task)).join("")}
-          </div>
-        `;
-        board.appendChild(col);
-      });
-    }
-
-    function renderCard(data) {
-      const colorMap = {
-        "Électricité": "#f8b400",
-        "Fibre": "#3fa9f5",
-        "Cuivre": "#c08457",
-        "PV / Solaire": "#ff8b3d",
-        "GC / Viabilisation": "#8bc34a",
-        "Autre": "#9e9e9e"
-      };
-      const bandColor = colorMap[data.job_type] || "#ccc";
-      const fullName = `${data.prenom} ${data.nom}`;
-
-      return `
-        <div class="card">
-          <div class="card__band" style="background:${bandColor}"></div>
-          <div class="card__body">
-            <div class="card__info">
-              <div class="card__title">${fullName}</div>
-              <div class="card__desc">${data.adresse || ''}</div>
-            </div>
-            <div class="menu">
-              <button class="menu__btn" onclick="toggleMenu(event)">⋮</button>
-              <div class="menu__list">
-                <button class="menu__item" onclick="editTask(${data.id})">Modifier</button>
-                <button class="menu__item" onclick="deleteTask(${data.id})">Supprimer</button>
-                <button class="menu__item">Archiver</button>
-              </div>
+          <div class="menu">
+            <button class="menu__btn" onclick="toggleMenu(event)">⋮</button>
+            <div class="menu__list">
+              <button class="menu__item" onclick="editTask(${data.id})">Modifier</button>
+              <button class="menu__item" onclick="deleteTask(${data.id})">Supprimer</button>
+              <button class="menu__item">Archiver</button>
             </div>
           </div>
         </div>
-      `;
-    }
+      </div>
+    `;
+  }
 
-    function toggleMenu(e) {
-      const menu = e.target.nextElementSibling;
-      menu.classList.toggle("is-open");
-      document.addEventListener("click", (evt) => {
-        if (!menu.contains(evt.target) && evt.target !== e.target) menu.classList.remove("is-open");
-      }, { once: true });
-    }
+  // ----- Drag & Drop -----
+  function handleDragStart(e, id) {
+    draggedTaskId = id;
+    e.dataTransfer.effectAllowed = "move";
+    e.target.classList.add("is-dragging");
+  }
 
-    function deleteTask(id) {
-      tasks = tasks.filter(t => t.id !== id);
+  function handleDragEnd(e) {
+    e.target.classList.remove("is-dragging");
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add("is-highlighted");
+  }
+
+  function handleDragLeave(e) {
+    e.currentTarget.classList.remove("is-highlighted");
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove("is-highlighted");
+    const newType = e.currentTarget.dataset.type;
+    const task = tasks.find(t => t.id === draggedTaskId);
+    if (task && newType) {
+      task.job_type = newType;
       renderBoard();
     }
+  }
 
-    function editTask(id) {
-      const t = tasks.find(t => t.id === id);
-      if (t) {
-        form.nom.value = t.nom;
-        form.prenom.value = t.prenom;
-        form.adresse.value = t.adresse;
-        form.date_rdv.value = t.date_rdv;
-        form.job_type.value = t.job_type;
-        deleteTask(id);
-        openModal();
-      }
-    }
+  // ----- Menu -----
+  function toggleMenu(e) {
+    const menu = e.target.nextElementSibling;
+    menu.classList.toggle("is-open");
+    document.addEventListener("click", (evt) => {
+      if (!menu.contains(evt.target) && evt.target !== e.target)
+        menu.classList.remove("is-open");
+    }, { once: true });
+  }
 
+  // ----- Supprimer / Modifier -----
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
     renderBoard();
-  </script>
-</body>
-</html>
+  }
+
+  function editTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) {
+      form.nom.value = t.nom;
+      form.prenom.value = t.prenom;
+      form.adresse.value = t.adresse;
+      form.date_rdv.value = t.date_rdv;
+      form.job_type.value = t.job_type;
+      deleteTask(id);
+      openModal();
+    }
+  }
+
+  renderBoard();
+</script>
