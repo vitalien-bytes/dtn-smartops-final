@@ -1,102 +1,119 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>{{ board.title }}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ board.title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="light">
-<header class="topbar">
-  <div class="brand">
-    <img src="/static/logo.png" alt="logo" class="logo">
-    <h1><span class="brand-black">DTN</span> <span class="brand-orange">SmartOps</span></h1>
-  </div>
+<body>
 
-  <form action="/logout" method="get">
-    <button type="submit" class="btn-outline">Déconnexion</button>
-  </form>
+<header class="topbar">
+    <div class="logo-title">
+        <img src="/static/logo.png" alt="Logo DTN" class="logo">
+        <h1><span class="black">DTN</span> <span class="orange">SmartOps</span></h1>
+    </div>
+
+    <div class="header-actions">
+        <button id="darkToggle" class="mode-toggle">🌙</button>
+        <a href="/logout"><button class="logout-btn">Déconnexion</button></a>
+    </div>
 </header>
 
-<section class="toolbar">
-  <form action="/add_column" method="post" class="inline">
-    <input type="text" name="name" placeholder="Nom de la colonne…" required>
-    <button class="btn">Ajouter colonne</button>
-  </form>
-</section>
+<main class="board-container">
+    <aside class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="/board">Tableaux</a></li>
+            <li><a href="#">Tâches archivées</a></li>
+            <li><a href="#">Utilisateurs</a></li>
+            <li><a href="#">Statistiques</a></li>
+        </ul>
+    </aside>
 
-<main class="board">
-  {% for col in columns %}
-  <section class="column">
-    <div class="column-header">
-      <h2>{{ col.title }}</h2>
-
-      <div class="menu">
-        <button class="menu-btn" aria-label="menu">⋮</button>
-        <div class="menu-list">
-          <form action="/rename_column/{{ col.id }}" method="post">
-            <input type="text" name="new_title" placeholder="Nouveau nom" required>
-            <button class="menu-item" type="submit">Renommer</button>
-          </form>
-          <form action="/delete_column/{{ col.id }}" method="post"
-                onsubmit="return confirm('Supprimer la colonne et ses cartes ?');">
-            <button class="menu-item danger" type="submit">Supprimer</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div class="cards" data-column-id="{{ col.id }}">
-      {% for card in cards_by_col[col.id] %}
-      <article class="card" data-card-id="{{ card.id }}" draggable="true">
-        <p>{{ card.text }}</p>
-        <form action="/delete_card/{{ card.id }}" method="post" class="inline">
-          <button class="small danger" title="Supprimer">✕</button>
+    <section class="board">
+        <!-- Formulaire pour ajouter une colonne -->
+        <form method="post" action="/add_column" class="add-col-form">
+            <input name="title" placeholder="Nouvelle section..." required>
+            <button type="submit">Ajouter</button>
         </form>
-      </article>
-      {% endfor %}
-    </div>
 
-    <form action="/add_card/{{ col.id }}" method="post" class="add-card">
-      <input type="text" name="text" placeholder="Nouvelle tâche…" required>
-      <button class="small">+</button>
-    </form>
-  </section>
-  {% endfor %}
+        <!-- Colonnes -->
+        {% for col in columns %}
+        <div class="column" data-column-id="{{ col.id }}">
+            <div class="column-header">
+                <h2>{{ col.title }}</h2>
+                <div class="dropdown">
+                    <button class="menu-btn">⋮</button>
+                    <div class="dropdown-content">
+                        <form method="post" action="/rename_column/{{ col.id }}">
+                            <input name="new_title" placeholder="Renommer...">
+                            <button type="submit">OK</button>
+                        </form>
+                        <form method="post" action="/archive_column/{{ col.id }}">
+                            <button type="submit">Archiver</button>
+                        </form>
+                        <form method="post" action="/delete_column/{{ col.id }}">
+                            <button type="submit" class="danger">Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards" data-column-id="{{ col.id }}">
+                {% for card in col.cards %}
+                <article class="card" draggable="true" data-card-id="{{ card.id }}">
+                    <p>{{ card.description }}</p>
+                    <form method="post" action="/delete_card/{{ card.id }}">
+                        <button class="delete-btn" title="Supprimer la tâche">✕</button>
+                    </form>
+                </article>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="/add_card/{{ col.id }}" class="add-card-form">
+                <input name="description" placeholder="Nouvelle tâche..." required>
+                <button type="submit">+</button>
+            </form>
+        </div>
+        {% endfor %}
+    </section>
 </main>
 
+<!-- =====================
+     SCRIPTS
+====================== -->
 <script>
-  // --- menus des colonnes ---
-  document.querySelectorAll('.menu-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const menu = btn.parentElement.querySelector('.menu-list');
-      document.querySelectorAll('.menu-list').forEach(m => m !== menu && m.classList.remove('open'));
-      menu.classList.toggle('open');
-    });
-  });
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.menu-list').forEach(m => m.classList.remove('open'));
-  });
+    // ---- DRAG & DROP ----
+    const cards = document.querySelectorAll('.card');
+    const columns = document.querySelectorAll('.cards');
 
-  // --- Drag & Drop des cartes ---
-  const columns = document.querySelectorAll('.cards');
-  document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', card.dataset.cardId);
-      e.dataTransfer.effectAllowed = 'move';
+    cards.forEach(card => {
+        card.addEventListener('dragstart', e => e.dataTransfer.setData('cardId', card.dataset.cardId));
     });
-  });
-  columns.forEach(col => {
-    col.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-    col.addEventListener('drop', async e => {
-      e.preventDefault();
-      const cardId = e.dataTransfer.getData('text/plain');
-      const newColId = col.dataset.columnId;
-      const res = await fetch(`/move_card/${cardId}/${newColId}`, { method: 'POST' });
-      if (res.ok) location.reload();
+
+    columns.forEach(col => {
+        col.addEventListener('dragover', e => e.preventDefault());
+        col.addEventListener('drop', async e => {
+            e.preventDefault();
+            const cardId = e.dataTransfer.getData('cardId');
+            const newColId = col.dataset.columnId;
+            const response = await fetch(`/move_card/${cardId}/${newColId}`, { method: 'POST' });
+            if (response.ok) location.reload();
+        });
     });
-  });
+
+    // ---- MODE SOMBRE / CLAIR ----
+    const toggle = document.getElementById('darkToggle');
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+    toggle.onclick = () => {
+        document.body.classList.toggle('dark');
+        const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+        toggle.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    };
 </script>
+
 </body>
 </html>
