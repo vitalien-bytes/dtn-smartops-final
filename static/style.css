@@ -1,138 +1,263 @@
+/* -------------------------
+   STYLE DTN SMARTOPS
+   ------------------------- */
+
+/* 🧱 Base */
 :root {
-    --bg: #f5f7fa;
-    --card: #ffffff;
-    --accent: #0078d4;
-    --accent2: #ff6600;
-    --text: #1e293b;
-    --muted: #64748b;
+  --primary: #ff6600;      /* Orange DTN */
+  --dark: #222;
+  --light: #ffffff;
+  --gray: #f0f0f0;
+  --border: #ddd;
+  --accent: #007bff;       /* Bleu bouton */
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0;
+  margin: 0;
+  background: var(--light);
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: var(--dark);
 }
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1em 2em;
-    background: #ffffff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+/* -------------------------
+   HEADER / TOPBAR
+   ------------------------- */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--light);
+  border-bottom: 2px solid var(--gray);
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-header img {
-    height: 55px;
-    margin-right: 12px;
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-header h1 {
-    display: flex;
-    align-items: center;
-    font-size: 1.6em;
-    font-weight: 800;
+.logo {
+  width: 60px;
+  height: 60px;
 }
 
-.menu {
-    display: flex;
-    gap: 1em;
+.logout-btn {
+  background: var(--accent);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-button, .menu a {
-    background: var(--accent);
-    color: #fff;
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: 0.2s;
+.logout-btn:hover {
+  background: #0056c1;
 }
-button:hover, .menu a:hover {
-    background: var(--accent2);
-}
+
+/* -------------------------
+   BOARD / COLONNES
+   ------------------------- */
 
 .board {
-    display: flex;
-    gap: 1em;
-    padding: 2em;
-    overflow-x: auto;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  overflow-x: auto;
+  align-items: flex-start;
 }
 
+/* Ajouter colonne */
+.add-col-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--gray);
+  padding: 15px;
+  border-radius: 10px;
+  min-width: 220px;
+  text-align: center;
+}
+
+.add-col-form input {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.add-col-form button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add-col-form button:hover {
+  background: var(--primary);
+}
+
+/* Colonne */
 .column {
-    background: var(--card);
-    padding: 1em;
-    border-radius: 10px;
-    width: 250px;
-    min-height: 300px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 15px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--gray);
 }
 
+/* En-tête colonne */
 .column-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.menu-btn {
-    background: none;
-    border: none;
-    font-size: 1.4em;
-    cursor: pointer;
-    color: var(--muted);
+.column h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
 }
 
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    border-radius: 8px;
-    padding: 0.5em;
-    z-index: 100;
-}
+/* -------------------------
+   CARTES (tâches)
+   ------------------------- */
 
-.dropdown-menu form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4em;
-}
-
-.dropdown-menu button {
-    width: 100%;
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 0.3em 0.5em;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.dropdown-menu button:hover {
-    background: #f1f5f9;
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 60px;
 }
 
 .card {
-    background: #f1f5f9;
-    border-left: 4px solid var(--accent);
-    margin: 0.5em 0;
-    padding: 0.6em;
-    border-radius: 6px;
+  background: var(--gray);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: grab;
+  position: relative;
+  border: 1px solid var(--border);
+  transition: 0.2s;
 }
 
-form {
-    display: flex;
-    gap: 0.5em;
-    margin-top: 0.5em;
+.card:hover {
+  background: #eaeaea;
 }
 
-input {
-    flex: 1;
-    padding: 0.5em;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.delete-btn {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  background: #ff3b3b;
+  border: none;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Ajouter une tâche */
+.add-card-form {
+  display: flex;
+  gap: 6px;
+}
+
+.add-card-form input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.add-card-form button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-weight: 700;
+  border-radius: 6px;
+  width: 35px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add-card-form button:hover {
+  background: var(--primary);
+}
+
+/* -------------------------
+   MENU ⋮
+   ------------------------- */
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--dark);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 24px;
+  background-color: #fff;
+  min-width: 140px;
+  border: 1px solid var(--border);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  z-index: 100;
+}
+
+.dropdown-content button {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropdown-content button:hover {
+  background: var(--gray);
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* -------------------------
+   RESPONSIVE
+   ------------------------- */
+@media (max-width: 768px) {
+  .board {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .column {
+    min-width: auto;
+  }
 }
