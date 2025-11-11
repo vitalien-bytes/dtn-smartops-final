@@ -1,222 +1,267 @@
-:root{
-  --bg: #f6f8fb;
-  --panel: #ffffff;
-  --text: #101317;
-  --muted:#6b7280;
-  --line:#e6e8ee;
-  --orange:#ff6a3d;
-  --orange-600:#e35b31;
-  --shadow: 0 8px 24px rgba(16,19,23,.08);
+/* ============================
+   STYLE GLOBAL DTN SMARTOPS
+============================ */
+:root {
+  --orange: #f8b400;
+  --dark: #1b1b1b;
+  --light: #ffffff;
+  --gray: #e8e8e8;
+  --blue: #3fa9f5;
+  --radius: 10px;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  --font: "Poppins", "Segoe UI", sans-serif;
 }
 
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+* {
+  box-sizing: border-box;
 }
 
-/* --- TOP BAR --- */
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 20px;
-  border-bottom:1px solid var(--line);
-  background:#fff;
-  box-shadow:var(--shadow);
-}
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-.brand__logo{
-  height:44px;
-  width:auto;
-}
-.brand__title{
-  margin:0;
-  font-weight:800;
-  font-size:22px;
-}
-.brand__title--black{color:#000;}
-.brand__title--orange{color:var(--orange);}
-
-/* --- Buttons --- */
-.btn{
-  border:0;
-  border-radius:10px;
-  padding:9px 14px;
-  font-weight:700;
-  cursor:pointer;
-  transition:.15s;
-}
-.btn--primary{
-  background:var(--orange);
-  color:#fff;
-}
-.btn--primary:hover{
-  background:var(--orange-600);
-}
-.btn--ghost{
-  background:#fff;
-  border:1px solid var(--line);
-  color:var(--text);
-}
-.btn--ghost:hover{
-  border-color:var(--orange);
-  color:var(--orange);
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--light);
+  color: var(--dark);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* --- Board --- */
-.board{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-  gap:16px;
-  padding:20px;
-  max-width:1360px;
-  margin-inline:auto;
-}
-.column{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  display:flex;
-  flex-direction:column;
-}
-.column__head{
-  display:flex;
-  justify-content:space-between;
-  padding:14px 14px 10px;
-}
-.column__title{
-  margin:0;
-  font-size:18px;
-  font-weight:700;
-}
-.cards{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  padding:10px 14px;
+/* ============================
+   HEADER
+============================ */
+header {
+  background: var(--light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 30px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-/* --- Carte client --- */
-.card{
-  position:relative;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:10px 12px;
-  box-shadow:0 4px 16px rgba(16,19,23,.05);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  transition:transform .15s,box-shadow .15s;
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 18px rgba(16,19,23,.1);
-}
-.card__band{
-  position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
-  width:6px;
-  border-radius:14px 0 0 14px;
-}
-.card__info{
-  display:flex;
-  flex-direction:column;
-  padding-left:10px;
-}
-.card__title{
-  font-weight:700;
-  color:var(--orange);
-  font-size:15px;
-}
-.card__desc{
-  font-size:13px;
-  color:var(--muted);
+header h1 {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--dark);
 }
 
-/* --- Menu --- */
-.menu{
-  position:relative;
+header h1 span {
+  color: var(--orange);
+  font-weight: 700;
 }
-.menu__btn{
-  border:0;
-  background:none;
-  color:var(--muted);
-  font-size:20px;
-  cursor:pointer;
-}
-.menu__btn:hover{color:var(--orange);}
-.menu__list{
-  position:absolute;
-  right:0;
-  top:30px;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:12px;
-  box-shadow:var(--shadow);
-  display:none;
-  z-index:10;
-}
-.menu__list.is-open{display:block;}
-.menu__item{
-  padding:10px 14px;
-  background:#fff;
-  border:0;
-  width:100%;
-  text-align:left;
-  cursor:pointer;
-  font-size:14px;
-}
-.menu__item:hover{background:#f7f7f9;}
 
-/* --- Modal --- */
-.modal{border:0;border-radius:14px;padding:0;width:min(720px,96vw);}
-.modal::backdrop{background:rgba(0,0,0,.35);}
-.modal__head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 16px;
-  border-bottom:1px solid var(--line);
+header img {
+  height: 42px;
+  margin-right: 10px;
+  border-radius: 8px;
 }
-.modal__close{
-  border:0;
-  background:none;
-  font-size:20px;
-  color:var(--muted);
-  cursor:pointer;
+
+#addTaskBtn {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
 }
-.modal__close:hover{color:var(--orange);}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  padding:14px 16px;
-  background:#fff;
+
+#addTaskBtn:hover {
+  background: #ffbf30;
 }
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+
+/* ============================
+   TABLEAU DE BORD
+============================ */
+#board {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 18px;
+  padding: 25px;
+  overflow-x: auto;
+  height: 100%;
 }
-.field--full{grid-column:1 / -1;}
-.input{
-  padding:9px 12px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  font-size:14px;
+
+.column {
+  background: #fafafa;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  transition: 0.2s ease;
 }
-.input:focus{
-  outline:2px solid rgba(255,106,61,.25);
-  border-color:var(--orange);
+
+.column__head {
+  background: var(--orange);
+  color: white;
+  padding: 10px 15px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  text-align: center;
+  font-weight: 600;
+}
+
+.column__title {
+  font-size: 16px;
+  margin: 0;
+}
+
+.cards {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================
+   CARTES CLIENT
+============================ */
+.card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+
+.card:hover {
+  transform: scale(1.01);
+}
+
+.card__band {
+  height: 5px;
+  width: 100%;
+}
+
+.card__body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+}
+
+.card__info {
+  flex: 1;
+}
+
+.card__title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.card__desc {
+  font-size: 13px;
+  color: #666;
+}
+
+/* ============================
+   MENU CONTEXTUEL
+============================ */
+.menu {
+  position: relative;
+}
+
+.menu__btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+  padding: 0 5px;
+}
+
+.menu__list {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 20px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.menu__list.is-open {
+  display: block;
+}
+
+.menu__item {
+  display: block;
+  width: 140px;
+  padding: 8px 12px;
+  text-align: left;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.menu__item:hover {
+  background: #f3f3f3;
+  color: var(--orange);
+}
+
+/* ============================
+   MODAL NOUVELLE TÂCHE
+============================ */
+dialog {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 400px;
+  max-width: 90%;
+  padding: 20px;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+form input,
+form select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+form button {
+  background: var(--orange);
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ============================
+   EFFETS DRAG & DROP
+============================ */
+.card.is-dragging {
+  opacity: 0.6;
+  transform: scale(1.03);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.column.is-highlighted {
+  background: #fff8f4;
+  box-shadow: inset 0 0 0 2px var(--orange);
+  transition: 0.2s ease;
 }
