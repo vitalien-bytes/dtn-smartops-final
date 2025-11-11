@@ -1,40 +1,39 @@
 /* -------------------------
-   STYLE DTN SMARTOPS
+   STYLE GLOBAL DTN SMARTOPS
    ------------------------- */
 
-/* 🧱 Base */
 :root {
-  --primary: #ff6600;      /* Orange DTN */
-  --dark: #222;
+  --primary: #ff6600;        /* Orange DTN */
+  --dark: #1c1c1c;
   --light: #ffffff;
-  --gray: #f0f0f0;
-  --border: #ddd;
-  --accent: #007bff;       /* Bleu bouton */
-}
-
-* {
-  box-sizing: border-box;
+  --gray: #f5f5f5;
+  --border: #e0e0e0;
+  --text: #222;
+  --accent: #007bff;
 }
 
 body {
   margin: 0;
-  background: var(--light);
+  background: var(--gray);
   font-family: "Segoe UI", Roboto, sans-serif;
-  color: var(--dark);
+  color: var(--text);
+  transition: background 0.4s, color 0.4s;
 }
 
 /* -------------------------
    HEADER / TOPBAR
    ------------------------- */
-
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--light);
-  border-bottom: 2px solid var(--gray);
+  border-bottom: 2px solid var(--border);
   padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .logo-title {
@@ -44,23 +43,51 @@ body {
 }
 
 .logo {
-  width: 60px;
-  height: 60px;
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
 }
 
+h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+h1 span.orange {
+  color: var(--primary);
+}
+
+h1 span.black {
+  color: var(--dark);
+}
+
+/* Bouton de déconnexion */
 .logout-btn {
   background: var(--accent);
   border: none;
   color: white;
   font-weight: 600;
-  padding: 8px 15px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  background: #0056c1;
+  background: var(--primary);
+}
+
+/* -------------------------
+   BOUTON MODE SOMBRE
+   ------------------------- */
+.mode-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  margin-left: 10px;
+  color: var(--text);
 }
 
 /* -------------------------
@@ -75,53 +102,51 @@ body {
   align-items: flex-start;
 }
 
-/* Ajouter colonne */
 .add-col-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--gray);
-  padding: 15px;
-  border-radius: 10px;
-  min-width: 220px;
+  background: var(--light);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   text-align: center;
 }
 
 .add-col-form input {
   padding: 8px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  width: 100%;
 }
 
 .add-col-form button {
-  background: var(--accent);
-  border: none;
+  background: var(--primary);
   color: white;
-  font-weight: bold;
-  padding: 8px;
-  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .add-col-form button:hover {
-  background: var(--primary);
+  background: #ff8533;
 }
 
 /* Colonne */
 .column {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: var(--light);
+  border-radius: 14px;
   padding: 15px;
-  min-width: 260px;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border: 1px solid var(--gray);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* En-tête colonne */
 .column-header {
   display: flex;
   justify-content: space-between;
@@ -130,12 +155,12 @@ body {
 
 .column h2 {
   font-size: 18px;
-  font-weight: 700;
   margin: 0;
+  font-weight: 700;
 }
 
 /* -------------------------
-   CARTES (tâches)
+   CARTES / TÂCHES
    ------------------------- */
 
 .cards {
@@ -152,11 +177,11 @@ body {
   cursor: grab;
   position: relative;
   border: 1px solid var(--border);
-  transition: 0.2s;
+  transition: transform 0.15s ease;
 }
 
 .card:hover {
-  background: #eaeaea;
+  transform: scale(1.02);
 }
 
 .delete-btn {
@@ -173,7 +198,6 @@ body {
   font-size: 14px;
 }
 
-/* Ajouter une tâche */
 .add-card-form {
   display: flex;
   gap: 6px;
@@ -208,9 +232,9 @@ body {
 .menu-btn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
-  color: var(--dark);
+  color: var(--text);
 }
 
 .dropdown {
@@ -221,11 +245,11 @@ body {
   display: none;
   position: absolute;
   right: 0;
-  top: 24px;
+  top: 25px;
   background-color: #fff;
-  min-width: 140px;
+  min-width: 150px;
   border: 1px solid var(--border);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
   border-radius: 6px;
   z-index: 100;
 }
@@ -249,15 +273,39 @@ body {
 }
 
 /* -------------------------
-   RESPONSIVE
+   MODE SOMBRE 🌙
    ------------------------- */
-@media (max-width: 768px) {
-  .board {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .column {
-    min-width: auto;
-  }
+body.dark {
+  background: #181818;
+  color: #f5f5f5;
 }
+
+body.dark .topbar {
+  background: #222;
+  border-bottom: 2px solid #333;
+}
+
+body.dark .column {
+  background: #2a2a2a;
+  border: 1px solid #333;
+}
+
+body.dark .add-col-form {
+  background: #2a2a2a;
+  border: 1px solid #333;
+}
+
+body.dark .card {
+  background: #333;
+  color: #f5f5f5;
+}
+
+body.dark .dropdown-content {
+  background: #2a2a2a;
+  border: 1px solid #444;
+}
+
+body.dark .logout-btn {
+  background: var(--primary);
+}
+
