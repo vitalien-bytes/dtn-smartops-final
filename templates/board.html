@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <title>{{ board.title }}</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script>
+        // Ouvre ou ferme un menu colonne
+        function toggleMenu(id) {
+            const menu = document.getElementById("menu-" + id);
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+    </script>
 </head>
 <body>
 <header>
     <div class="logo-title">
-        <h1><img src="/static/logo.png" alt="logo">DTN SmartOps</h1>
+        <img src="/static/logo.png" alt="logo">
+        <h1><span style="color:#000;">DTN</span><span style="color:#ff6600;"> SmartOps</span></h1>
     </div>
     <div class="menu">
         <a href="/">Déconnexion</a>
@@ -17,8 +25,7 @@
 </header>
 
 <main class="board">
-
-    <!-- Ajouter une colonne -->
+    <!-- Ajouter une nouvelle colonne -->
     <section class="new-column">
         <form method="post" action="/add_column">
             <input name="title" placeholder="Nom de la colonne..." required>
@@ -28,12 +35,24 @@
 
     {% for column in columns %}
     <section class="column">
-        <h2>
-            {{ column.title }}
-            <form method="post" action="/delete_column/{{ column.id }}" style="display:inline;">
-                <button title="Supprimer colonne">🗑</button>
-            </form>
-        </h2>
+        <div class="column-header">
+            <h2>{{ column.title }}</h2>
+            <div class="dropdown">
+                <button class="menu-btn" onclick="toggleMenu('{{ column.id }}')">⋮</button>
+                <div id="menu-{{ column.id }}" class="dropdown-menu">
+                    <form method="post" action="/delete_column/{{ column.id }}">
+                        <button type="submit">🗑 Supprimer</button>
+                    </form>
+                    <form method="post" action="/edit_column/{{ column.id }}">
+                        <input type="text" name="new_title" placeholder="Nouveau nom" required>
+                        <button type="submit">✏️ Modifier</button>
+                    </form>
+                    <form method="post" action="/archive_column/{{ column.id }}">
+                        <button type="submit">📦 Archiver</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         {% for card in column.cards %}
         <div class="card">
@@ -51,7 +70,6 @@
         </form>
     </section>
     {% endfor %}
-
 </main>
 </body>
 </html>
