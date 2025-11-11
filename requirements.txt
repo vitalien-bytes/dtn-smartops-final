@@ -3,5 +3,5 @@ uvicorn==0.30.6
 SQLAlchemy==2.0.35
 jinja2==3.1.4
 python-multipart==0.0.9
-asyncpg==0.29.0
+pg8000==1.31.2
 itsdangerous==2.2.0
