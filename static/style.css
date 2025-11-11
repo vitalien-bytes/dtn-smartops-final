@@ -1,39 +1,42 @@
-/* -------------------------
-   STYLE GLOBAL DTN SMARTOPS
-   ------------------------- */
-
+/* -------------------------------
+   Thème professionnel DTN SmartOps
+   ------------------------------- */
 :root {
-  --primary: #ff6600;        /* Orange DTN */
-  --dark: #1c1c1c;
-  --light: #ffffff;
-  --gray: #f5f5f5;
-  --border: #e0e0e0;
-  --text: #222;
-  --accent: #007bff;
+  --orange: #ff6600;
+  --orange-light: #ffa366;
+  --gray-bg: #f4f6f8;
+  --gray-light: #e9ecef;
+  --gray-medium: #dee2e6;
+  --gray-dark: #495057;
+  --white: #ffffff;
+  --text: #1c1c1c;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --radius: 12px;
 }
 
 body {
   margin: 0;
-  background: var(--gray);
-  font-family: "Segoe UI", Roboto, sans-serif;
+  padding: 0;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--gray-bg);
   color: var(--text);
-  transition: background 0.4s, color 0.4s;
+  transition: background 0.3s, color 0.3s;
 }
 
-/* -------------------------
-   HEADER / TOPBAR
-   ------------------------- */
+/* -------------------------------
+   HEADER (Topbar)
+   ------------------------------- */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--light);
-  border-bottom: 2px solid var(--border);
-  padding: 10px 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-light);
+  box-shadow: 0 2px 4px var(--shadow);
+  padding: 12px 24px;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
 }
 
 .logo-title {
@@ -49,192 +52,169 @@ body {
 }
 
 h1 {
-  margin: 0;
   font-size: 26px;
   font-weight: 800;
+  margin: 0;
 }
 
-h1 span.orange {
-  color: var(--primary);
+h1 .black {
+  color: #1c1c1c;
 }
 
-h1 span.black {
-  color: var(--dark);
+h1 .orange {
+  color: var(--orange);
 }
 
-/* Bouton de déconnexion */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .logout-btn {
-  background: var(--accent);
+  background: var(--orange);
   border: none;
-  color: white;
-  font-weight: 600;
+  color: #fff;
   padding: 10px 16px;
-  border-radius: 10px;
+  font-weight: 600;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
 }
 
 .logout-btn:hover {
-  background: var(--primary);
+  background: #ff8533;
 }
 
-/* -------------------------
-   BOUTON MODE SOMBRE
-   ------------------------- */
 .mode-toggle {
   background: transparent;
   border: none;
+  font-size: 20px;
   cursor: pointer;
-  font-size: 22px;
-  margin-left: 10px;
-  color: var(--text);
 }
 
-/* -------------------------
-   BOARD / COLONNES
-   ------------------------- */
-
-.board {
+/* -------------------------------
+   SIDEBAR
+   ------------------------------- */
+.board-container {
   display: flex;
+  height: calc(100vh - 70px);
+}
+
+.sidebar {
+  width: 220px;
+  background: var(--white);
+  border-right: 1px solid var(--gray-light);
+  padding: 20px;
+  box-shadow: 2px 0 5px var(--shadow);
+}
+
+.sidebar h3 {
+  margin-top: 0;
+  color: var(--orange);
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 12px 0;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.sidebar a:hover {
+  color: var(--orange);
+}
+
+/* -------------------------------
+   BOARD
+   ------------------------------- */
+.board {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
   gap: 20px;
   padding: 20px;
   overflow-x: auto;
-  align-items: flex-start;
 }
 
 .add-col-form {
-  background: var(--light);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
   min-width: 240px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  background: var(--white);
+  padding: 15px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-medium);
+  box-shadow: 0 1px 4px var(--shadow);
   text-align: center;
 }
 
 .add-col-form input {
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 10px;
   width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-medium);
+  margin-bottom: 8px;
 }
 
 .add-col-form button {
-  background: var(--primary);
-  color: white;
+  background: var(--orange);
   border: none;
-  font-weight: 600;
+  color: #fff;
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: 600;
 }
 
 .add-col-form button:hover {
-  background: #ff8533;
+  background: var(--orange-light);
 }
 
-/* Colonne */
+/* -------------------------------
+   COLUMNS
+   ------------------------------- */
 .column {
-  background: var(--light);
-  border-radius: 14px;
+  background: var(--white);
   padding: 15px;
+  border-radius: var(--radius);
   min-width: 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px var(--shadow);
+  border: 1px solid var(--gray-light);
 }
 
 .column-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--gray-light);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .column h2 {
-  font-size: 18px;
   margin: 0;
+  font-size: 18px;
   font-weight: 700;
 }
 
-/* -------------------------
-   CARTES / TÂCHES
-   ------------------------- */
-
-.cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 60px;
-}
-
-.card {
-  background: var(--gray);
-  padding: 10px;
-  border-radius: 8px;
-  cursor: grab;
-  position: relative;
-  border: 1px solid var(--border);
-  transition: transform 0.15s ease;
-}
-
-.card:hover {
-  transform: scale(1.02);
-}
-
-.delete-btn {
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  background: #ff3b3b;
-  border: none;
-  color: white;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.add-card-form {
-  display: flex;
-  gap: 6px;
-}
-
-.add-card-form input {
-  flex: 1;
-  padding: 6px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.add-card-form button {
-  background: var(--accent);
-  color: white;
-  border: none;
-  font-weight: 700;
-  border-radius: 6px;
-  width: 35px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.add-card-form button:hover {
-  background: var(--primary);
-}
-
-/* -------------------------
-   MENU ⋮
-   ------------------------- */
-
+/* Menu ⋮ */
 .menu-btn {
   background: none;
   border: none;
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
-  color: var(--text);
+  color: var(--gray-dark);
 }
 
 .dropdown {
@@ -246,66 +226,130 @@ h1 span.black {
   position: absolute;
   right: 0;
   top: 25px;
-  background-color: #fff;
-  min-width: 150px;
-  border: 1px solid var(--border);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-  border-radius: 6px;
+  background: var(--white);
+  border: 1px solid var(--gray-medium);
+  box-shadow: 0 4px 10px var(--shadow);
+  border-radius: 8px;
   z-index: 100;
+  min-width: 160px;
 }
 
-.dropdown-content button {
+.dropdown-content form {
+  margin: 0;
+  padding: 0;
+}
+
+.dropdown-content button,
+.dropdown-content input {
+  display: block;
   width: 100%;
   padding: 10px;
-  background: none;
+  background: transparent;
   border: none;
   text-align: left;
-  cursor: pointer;
-  transition: 0.2s;
+  font-size: 14px;
+  color: var(--text);
 }
 
 .dropdown-content button:hover {
-  background: var(--gray);
+  background: var(--gray-bg);
+  cursor: pointer;
+}
+
+.dropdown-content .danger {
+  color: #d9534f;
 }
 
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-/* -------------------------
-   MODE SOMBRE 🌙
-   ------------------------- */
+/* -------------------------------
+   CARDS
+   ------------------------------- */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 60px;
+}
+
+.card {
+  background: var(--gray-bg);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-light);
+  cursor: grab;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.add-card-form {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.add-card-form input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--gray-medium);
+  border-radius: 6px;
+}
+
+.add-card-form button {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  width: 35px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* -------------------------------
+   MODE SOMBRE
+   ------------------------------- */
 body.dark {
-  background: #181818;
-  color: #f5f5f5;
+  background: #1e1e1e;
+  color: #f0f0f0;
 }
 
-body.dark .topbar {
-  background: #222;
-  border-bottom: 2px solid #333;
-}
-
-body.dark .column {
-  background: #2a2a2a;
-  border: 1px solid #333;
-}
-
+body.dark .topbar,
+body.dark .sidebar,
+body.dark .column,
 body.dark .add-col-form {
   background: #2a2a2a;
-  border: 1px solid #333;
+  border-color: #3a3a3a;
+  color: #f0f0f0;
 }
 
-body.dark .card {
-  background: #333;
-  color: #f5f5f5;
+body.dark a,
+body.dark h1 .black {
+  color: #f0f0f0;
 }
 
 body.dark .dropdown-content {
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: #333;
+  border-color: #444;
 }
 
-body.dark .logout-btn {
-  background: var(--primary);
+body.dark .card {
+  background: #3a3a3a;
+  border-color: #444;
 }
-
