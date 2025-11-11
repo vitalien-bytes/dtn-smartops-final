@@ -5,19 +5,20 @@
     <title>{{ board.title }}</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="dark">
-<header class="topbar">
+<body>
+<header>
     <div class="logo-title">
-        <h1>📋 {{ board.title }}</h1>
+        <h1><img src="/static/logo.png" alt="logo">DTN SmartOps</h1>
     </div>
-    <form method="get" action="/">
-        <button type="submit">🔒 Déconnexion</button>
-    </form>
+    <div class="menu">
+        <a href="/">Déconnexion</a>
+        <a href="/board">Actualiser</a>
+    </div>
 </header>
 
 <main class="board">
 
-    <!-- Ajouter une nouvelle colonne -->
+    <!-- Ajouter une colonne -->
     <section class="new-column">
         <form method="post" action="/add_column">
             <input name="title" placeholder="Nom de la colonne..." required>
@@ -27,10 +28,20 @@
 
     {% for column in columns %}
     <section class="column">
-        <h2>{{ column.title }}</h2>
+        <h2>
+            {{ column.title }}
+            <form method="post" action="/delete_column/{{ column.id }}" style="display:inline;">
+                <button title="Supprimer colonne">🗑</button>
+            </form>
+        </h2>
 
         {% for card in column.cards %}
-        <div class="card">{{ card.title }}</div>
+        <div class="card">
+            {{ card.title }}
+            <form method="post" action="/delete_card/{{ card.id }}">
+                <button title="Supprimer carte">❌</button>
+            </form>
+        </div>
         {% endfor %}
 
         <!-- Ajouter une carte -->
