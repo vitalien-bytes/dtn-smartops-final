@@ -82,3 +82,23 @@ def add_card(column_id: int, title: str = Form(...), db: Session = Depends(get_d
     db.commit()
     db.refresh(card)
     return RedirectResponse("/board", status_code=302)
+
+# --- Supprimer une colonne ---
+@app.post("/delete_column/{column_id}")
+def delete_column(column_id: int, db: Session = Depends(get_db)):
+    column = db.query(Column).filter(Column.id == column_id).first()
+    if not column:
+        raise HTTPException(status_code=404, detail="Colonne introuvable")
+    db.delete(column)
+    db.commit()
+    return RedirectResponse("/board", status_code=302)
+
+# --- Supprimer une carte ---
+@app.post("/delete_card/{card_id}")
+def delete_card(card_id: int, db: Session = Depends(get_db)):
+    card = db.query(Card).filter(Card.id == card_id).first()
+    if not card:
+        raise HTTPException(status_code=404, detail="Carte introuvable")
+    db.delete(card)
+    db.commit()
+    return RedirectResponse("/board", status_code=302)
