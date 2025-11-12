@@ -1,19 +1,13 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# On récupère la variable d'environnement Render
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise RuntimeError("❌ DATABASE_URL non défini dans les variables Render.")
+# Utiliser pg8000 à la place de psycopg2
+if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://")
 
-# Crée le moteur SQLAlchemy
-engine = create_engine(DATABASE_URL)
-
-# Crée une session
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Base commune
+engine = create_engine(DATABASE_URL, echo=False)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
