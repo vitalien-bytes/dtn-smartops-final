@@ -64,9 +64,7 @@ def show_board(request: Request, db: Session = Depends(get_db)):
     board = db.query(Board).first()
     if not board:
         board = Board(title=BOARD_TITLE)
-        db.add(board)
-        db.commit(); db.refresh(board)
-
+        db.add(board); db.commit(); db.refresh(board)
         # colonnes exemple
         for name in ["devis acceptés", "Travaux programmés", "Factures à faire"]:
             db.add(Column(title=name, board_id=board.id))
@@ -129,8 +127,7 @@ def add_card(column_id: int, text: str = Form(...), db: Session = Depends(get_db
 def delete_card(card_id: int, db: Session = Depends(get_db)):
     card = db.query(Card).filter(Card.id == card_id).first()
     if card:
-        db.delete(card)
-        db.commit()
+        db.delete(card); db.commit()
     return RedirectResponse("/board", status_code=302)
 
 @app.post("/move_card/{card_id}/{new_column_id}")
