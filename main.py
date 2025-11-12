@@ -64,7 +64,9 @@ def show_board(request: Request, db: Session = Depends(get_db)):
     board = db.query(Board).first()
     if not board:
         board = Board(title=BOARD_TITLE)
-        db.add(board); db.commit(); db.refresh(board)
+        db.add(board)
+        db.commit(); db.refresh(board)
+
         # colonnes exemple
         for name in ["devis acceptés", "Travaux programmés", "Factures à faire"]:
             db.add(Column(title=name, board_id=board.id))
@@ -107,7 +109,6 @@ def delete_column(column_id: int, db: Session = Depends(get_db)):
     col = db.query(Column).filter(Column.id == column_id).first()
     if not col:
         raise HTTPException(status_code=404, detail="Colonne introuvable")
-    # supprimer les cartes associées
     db.query(Card).filter(Card.column_id == col.id).delete()
     db.delete(col)
     db.commit()
@@ -127,7 +128,8 @@ def add_card(column_id: int, text: str = Form(...), db: Session = Depends(get_db
 def delete_card(card_id: int, db: Session = Depends(get_db)):
     card = db.query(Card).filter(Card.id == card_id).first()
     if card:
-        db.delete(card); db.commit()
+        db.delete(card)
+        db.commit()
     return RedirectResponse("/board", status_code=302)
 
 @app.post("/move_card/{card_id}/{new_column_id}")
