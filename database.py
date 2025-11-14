@@ -1,34 +1,53 @@
-import os
-import re
+# database.py
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import os
 
-# 1. Récupère l'URL depuis Render (Environment -> DATABASE_URL)
+# -----------------------------------------------------------------------------
+# 1) Récupération de l'URL de connexion
+# -----------------------------------------------------------------------------
+# Le nom que nous avions défini était : DATABASE_URL
+# Exemple Aiven / ElephantSQL : 
+# postgresql://user:password@host:port/dbname
+# -----------------------------------------------------------------------------
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL n'est pas définie dans les variables d'environnement.")
-
-# 2. Adapter le schéma Aiven : postgres:// -> postgresql+pg8000://
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgres://",
-        "postgresql+pg8000://",
-        1  # seulement la première occurrence
+if DATABASE_URL is None:
+    raise ValueError(
+        "❌ La variable d'environnement DATABASE_URL n'est pas définie. "
+        "Pense à la mettre dans ton .env"
     )
 
-# 3. Supprimer le paramètre sslmode=require (pg8000 ne le supporte pas)
-if "sslmode=" in DATABASE_URL:
-    # enlève ?sslmode=... ou &sslmode=...
-    DATABASE_URL = re.sub(r"[?&]sslmode=[^&]+", "", DATABASE_URL)
+# -----------------------------------------------------------------------------
+# 2) Création du moteur SQLAlchemy
+# -----------------------------------------------------------------------------
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+)
 
-    # Si l'URL finit par ? ou &, on nettoie
-    if DATABASE_URL.endswith("?") or DATABASE_URL.endswith("&"):
-        DATABASE_URL = DATABASE_URL[:-1]
+# -----------------------------------------------------------------------------
+# 3) Création de la Session locale
+# -----------------------------------------------------------------------------
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
 
-# 4. Créer le moteur SQLAlchemy
-engine = create_engine(DATABASE_URL, echo=False)
-
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-
+# -----------------------------------------------------------------------------
+# 4) Base déclarative (modèles)
+# -----------------------------------------------------------------------------
 Base = declarative_base()
+
+# -----------------------------------------------------------------------------
+# 5) Dépendance FastAPI pour obtenir une session DB
+# -----------------------------------------------------------------------------
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
