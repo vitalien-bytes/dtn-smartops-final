@@ -1,4 +1,4 @@
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
 
 Base = declarative_base()
@@ -8,7 +8,7 @@ class Board(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
 
-class Column(Base):
+class KanbanColumn(Base):   # <-- NOUVEAU NOM
     __tablename__ = "columns"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
