@@ -4,27 +4,36 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
+from fastapi.templating import Jinja2Templates
 
+# --- DB & modèles ---
 from database import SessionLocal, engine
 from models import Base, Board, Column, Card
 
-# ---- App & sécurité session ----
+# ==========================================================
+# 🔥 Création des tables APRÈS import des modèles
+# ==========================================================
+Base.metadata.create_all(bind=engine)
+
+# ==========================================================
+# 🔥 App & configuration sécurité sessions
+# ==========================================================
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_hex(16))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-Base.metadata.create_all(bind=engine)
-
-# ---- Config login ----
+# ==========================================================
+# 🔥 Variables d’environnement Render
+# ==========================================================
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASS = os.getenv("ADMIN_PASS", "DTN-2025-secure-base")
 BOARD_TITLE = os.getenv("BOARD_TITLE", "DTN SmartOps")
 
-# ---- jinja2 templates ----
-from fastapi.templating import Jinja2Templates
 templates = Jinja2Templates(directory="templates")
 
-# ---- DB dependency ----
+# ==========================================================
+# 🔥 Dépendance DB
+# ==========================================================
 def get_db():
     db = SessionLocal()
     try:
@@ -32,7 +41,9 @@ def get_db():
     finally:
         db.close()
 
-# ---------- Auth ----------
+# ==========================================================
+# 🔥 Authentification
+# ==========================================================
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     if request.session.get("logged_in"):
@@ -48,6 +59,7 @@ def do_login(request: Request, username: str = Form(...), password: str = Form(.
     if username == ADMIN_USER and password == ADMIN_PASS:
         request.session["logged_in"] = True
         return RedirectResponse("/board", status_code=302)
+
     raise HTTPException(status_code=401, detail="Identifiants invalides")
 
 @app.get("/logout")
@@ -55,19 +67,23 @@ def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/login", status_code=302)
 
-# ---------- Board ----------
+# ==========================================================
+# 🔥 Page du Board
+# ==========================================================
 @app.get("/board", response_class=HTMLResponse)
 def show_board(request: Request, db: Session = Depends(get_db)):
     if not request.session.get("logged_in"):
         return RedirectResponse("/login", status_code=302)
 
+    # Récupère le board ou le crée s'il n'existe pas
     board = db.query(Board).first()
     if not board:
         board = Board(title=BOARD_TITLE)
         db.add(board)
-        db.commit(); db.refresh(board)
+        db.commit()
+        db.refresh(board)
 
-        # colonnes exemple
+        # Colonnes par défaut
         for name in ["devis acceptés", "Travaux programmés", "Factures à faire"]:
             db.add(Column(title=name, board_id=board.id))
         db.commit()
@@ -85,7 +101,9 @@ def show_board(request: Request, db: Session = Depends(get_db)):
         },
     )
 
-# ---------- Colonnes : ajouter / renommer / supprimer ----------
+# ==========================================================
+# 🔥 Colonnes
+# ==========================================================
 @app.post("/add_column")
 def add_column(name: str = Form(...), db: Session = Depends(get_db)):
     board = db.query(Board).first()
@@ -114,7 +132,9 @@ def delete_column(column_id: int, db: Session = Depends(get_db)):
     db.commit()
     return RedirectResponse("/board", status_code=302)
 
-# ---------- Cartes : ajouter / supprimer / déplacer ----------
+# ==========================================================
+# 🔥 Cartes
+# ==========================================================
 @app.post("/add_card/{column_id}")
 def add_card(column_id: int, text: str = Form(...), db: Session = Depends(get_db)):
     text = text.strip()
@@ -141,12 +161,12 @@ def move_card(card_id: int, new_column_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "ok"}
 
-from fastapi import FastAPI, Depends
-from sqlalchemy import inspect
-from database import get_db
-
+# ==========================================================
+# 🔥 Debug (à supprimer après tests)
+# ==========================================================
 @app.get("/check-tables")
 def check_tables(db=Depends(get_db)):
+    from sqlalchemy import inspect
     inspector = inspect(db.bind)
     return {"tables": inspector.get_table_names()}
 
