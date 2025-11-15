@@ -1,12 +1,44 @@
-/* ====== État simple en mémoire (visuel) ====== */
-const state = {
-  columns: [
-    { id: id(), title: "devis à faire", cards: [] },
-    { id: id(), title: "devis validé", cards: [] },
-    { id: id(), title: "rdv programmé", cards: [] },
-    { id: id(), title: "facture à envoyer", cards: [] },
-  ],
-};
+/* ====== Sauvegarde locale (localStorage) ====== */
+const STORAGE_KEY = "dtn_smartops_board_v1";
+
+function id() {
+  return Math.random().toString(36).slice(2, 9);
+}
+
+function getDefaultState() {
+  return {
+    columns: [
+      { id: id(), title: "devis à faire", cards: [] },
+      { id: id(), title: "devis validé", cards: [] },
+      { id: id(), title: "rdv programmé", cards: [] },
+      { id: id(), title: "facture à envoyer", cards: [] },
+    ],
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return getDefaultState();
+    const parsed = JSON.parse(raw);
+    if (!parsed.columns) throw new Error("state invalide");
+    return parsed;
+  } catch (e) {
+    console.warn("Impossible de charger l'état, utilisation du défaut :", e);
+    return getDefaultState();
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn("Impossible de sauvegarder l'état :", e);
+  }
+}
+
+/* ====== État ====== */
+let state = loadState();
 
 const board = document.getElementById("board");
 const newColumnName = document.getElementById("newColumnName");
@@ -32,10 +64,6 @@ const modalEdit = document.getElementById("modalEdit");
 const modalDelete = document.getElementById("modalDelete");
 
 let modalContext = { columnId: null, cardId: null };
-
-function id() {
-  return Math.random().toString(36).slice(2, 9);
-}
 
 /* ====== Rendu ====== */
 function render() {
@@ -102,7 +130,10 @@ function render() {
 
     board.appendChild(colEl);
   });
+
   wireEvents();
+  // 🔐 Sauvegarde à chaque rendu
+  saveState();
 }
 
 function wireEvents() {
@@ -129,9 +160,12 @@ function wireEvents() {
         const title = section.querySelector(".column-title");
         title.focus();
         document.execCommand("selectAll", false, null);
-      }
-      if (action === "open") {
-        // pour les cartes uniquement
+        // On sauve le nouveau titre quand on sort du champ
+        title.onblur = () => {
+          const col = state.columns.find(c => c.id === colId);
+          col.title = title.textContent.trim() || col.title;
+          render();
+        };
       }
       closeMenus();
     };
@@ -266,8 +300,8 @@ taskForm.onsubmit = (e) => {
     });
   }
 
-  closeDrawer();
   render();
+  closeDrawer();
 };
 
 /* ====== Déplacement de carte ====== */
