@@ -1,28 +1,21 @@
-from sqlalchemy.orm import declarative_base, relationship, Mapped, mapped_column
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, String, ForeignKey
 
 Base = declarative_base()
 
 class Board(Base):
     __tablename__ = "boards"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    columns: Mapped[list["Column"]] = relationship("Column", back_populates="board", cascade="all, delete-orphan")
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
 
 class Column(Base):
     __tablename__ = "columns"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    board_id: Mapped[int] = mapped_column(Integer, ForeignKey("boards.id", ondelete="CASCADE"))
-    position: Mapped[int] = mapped_column(Integer, default=0)
-    board: Mapped["Board"] = relationship("Board", back_populates="columns")
-    cards: Mapped[list["Card"]] = relationship("Card", back_populates="column", cascade="all, delete-orphan")
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    board_id = Column(Integer, ForeignKey("boards.id"))
 
 class Card(Base):
     __tablename__ = "cards"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(String(2000), default="")
-    position: Mapped[int] = mapped_column(Integer, default=0)
-    column_id: Mapped[int] = mapped_column(Integer, ForeignKey("columns.id", ondelete="CASCADE"))
-    column: Mapped["Column"] = relationship("Column", back_populates="cards")
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    column_id = Column(Integer, ForeignKey("columns.id"))
