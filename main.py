@@ -140,3 +140,13 @@ def move_card(card_id: int, new_column_id: int, db: Session = Depends(get_db)):
     card.column_id = new_column_id
     db.commit()
     return {"status": "ok"}
+
+from fastapi import FastAPI, Depends
+from sqlalchemy import inspect
+from database import get_db
+
+@app.get("/check-tables")
+def check_tables(db=Depends(get_db)):
+    inspector = inspect(db.bind)
+    return {"tables": inspector.get_table_names()}
+
