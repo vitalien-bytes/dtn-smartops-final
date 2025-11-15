@@ -148,3 +148,18 @@ from sqlalchemy import inspect
 def check_tables(db=Depends(get_db)):
     inspector = inspect(db.bind)
     return {"tables": inspector.get_table_names()}
+
+@app.get("/debug-rows")
+def debug_rows(db: Session = Depends(get_db)):
+    boards = db.query(Board).all()
+    cols = db.query(KanbanColumn).all() if 'KanbanColumn' in globals() else db.query(Column).all()
+    cards = db.query(Card).all()
+
+    return {
+        "boards_count": len(boards),
+        "columns_count": len(cols),
+        "cards_count": len(cards),
+        "boards": [b.title for b in boards],
+        "columns": [c.title for c in cols],
+        "cards": [c.title for c in cards],
+    }
