@@ -150,3 +150,7 @@ def check_tables(db=Depends(get_db)):
     inspector = inspect(db.bind)
     return {"tables": inspector.get_table_names()}
 
+@app.get("/debug-dburl")
+def debug_dburl():
+    import os
+    return {"DATABASE_URL": os.getenv("DATABASE_URL")}
