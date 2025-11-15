@@ -1,39 +1,31 @@
+
 import os, secrets
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import inspect
 
 from database import SessionLocal, engine
 from models import Base, Board, Column, Card
 
-# -------------------------------------------------------
-# APP + SESSION
-# -------------------------------------------------------
+# ---- App & sécurité session ----
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_hex(16))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 Base.metadata.create_all(bind=engine)
 
-# -------------------------------------------------------
-# ENV VARIABLES
-# -------------------------------------------------------
+# ---- Config login ----
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASS = os.getenv("ADMIN_PASS", "DTN-2025-secure-base")
 BOARD_TITLE = os.getenv("BOARD_TITLE", "DTN SmartOps")
 
-# -------------------------------------------------------
-# TEMPLATES
-# -------------------------------------------------------
+# ---- jinja2 templates ----
 from fastapi.templating import Jinja2Templates
 templates = Jinja2Templates(directory="templates")
 
-# -------------------------------------------------------
-# DB DEPENDENCY
-# -------------------------------------------------------
+# ---- DB dependency ----
 def get_db():
     db = SessionLocal()
     try:
@@ -41,9 +33,7 @@ def get_db():
     finally:
         db.close()
 
-# -------------------------------------------------------
-# AUTH
-# -------------------------------------------------------
+# ---------- Auth ----------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     if request.session.get("logged_in"):
@@ -55,7 +45,7 @@ def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "title": BOARD_TITLE})
 
 @app.post("/login")
-def login(request: Request, username: str = Form(...), password: str = Form(...)):
+def do_login(request: Request, username: str = Form(...), password: str = Form(...)):
     if username == ADMIN_USER and password == ADMIN_PASS:
         request.session["logged_in"] = True
         return RedirectResponse("/board", status_code=302)
@@ -66,9 +56,7 @@ def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/login", status_code=302)
 
-# -------------------------------------------------------
-# BOARD DISPLAY
-# -------------------------------------------------------
+# ---------- Board ----------
 @app.get("/board", response_class=HTMLResponse)
 def show_board(request: Request, db: Session = Depends(get_db)):
     if not request.session.get("logged_in"):
@@ -80,7 +68,7 @@ def show_board(request: Request, db: Session = Depends(get_db)):
         db.add(board)
         db.commit(); db.refresh(board)
 
-        # Ajout colonnes par défaut
+        # colonnes exemple
         for name in ["devis acceptés", "Travaux programmés", "Factures à faire"]:
             db.add(Column(title=name, board_id=board.id))
         db.commit()
@@ -98,12 +86,12 @@ def show_board(request: Request, db: Session = Depends(get_db)):
         },
     )
 
-# -------------------------------------------------------
-# COLUMNS
-# -------------------------------------------------------
+# ---------- Colonnes : ajouter / renommer / supprimer ----------
 @app.post("/add_column")
 def add_column(name: str = Form(...), db: Session = Depends(get_db)):
     board = db.query(Board).first()
+    if not board:
+        raise HTTPException(status_code=400, detail="Board absent")
     db.add(Column(title=name.strip(), board_id=board.id))
     db.commit()
     return RedirectResponse("/board", status_code=302)
@@ -111,6 +99,8 @@ def add_column(name: str = Form(...), db: Session = Depends(get_db)):
 @app.post("/rename_column/{column_id}")
 def rename_column(column_id: int, new_title: str = Form(...), db: Session = Depends(get_db)):
     col = db.query(Column).filter(Column.id == column_id).first()
+    if not col:
+        raise HTTPException(status_code=404, detail="Colonne introuvable")
     col.title = new_title.strip()
     db.commit()
     return RedirectResponse("/board", status_code=302)
@@ -118,52 +108,36 @@ def rename_column(column_id: int, new_title: str = Form(...), db: Session = Depe
 @app.post("/delete_column/{column_id}")
 def delete_column(column_id: int, db: Session = Depends(get_db)):
     col = db.query(Column).filter(Column.id == column_id).first()
+    if not col:
+        raise HTTPException(status_code=404, detail="Colonne introuvable")
     db.query(Card).filter(Card.column_id == col.id).delete()
     db.delete(col)
     db.commit()
     return RedirectResponse("/board", status_code=302)
 
-# -------------------------------------------------------
-# CARDS
-# -------------------------------------------------------
+# ---------- Cartes : ajouter / supprimer / déplacer ----------
 @app.post("/add_card/{column_id}")
 def add_card(column_id: int, text: str = Form(...), db: Session = Depends(get_db)):
     text = text.strip()
-    if text:
-        db.add(Card(title=text, column_id=column_id))
-        db.commit()
+    if not text:
+        return RedirectResponse("/board", status_code=302)
+    db.add(Card(title=text, column_id=column_id))
+    db.commit()
     return RedirectResponse("/board", status_code=302)
 
 @app.post("/delete_card/{card_id}")
 def delete_card(card_id: int, db: Session = Depends(get_db)):
     card = db.query(Card).filter(Card.id == card_id).first()
     if card:
-        db.delete(card); db.commit()
+        db.delete(card)
+        db.commit()
     return RedirectResponse("/board", status_code=302)
 
 @app.post("/move_card/{card_id}/{new_column_id}")
 def move_card(card_id: int, new_column_id: int, db: Session = Depends(get_db)):
     card = db.query(Card).filter(Card.id == card_id).first()
+    if not card:
+        raise HTTPException(status_code=404, detail="Carte introuvable")
     card.column_id = new_column_id
     db.commit()
     return {"status": "ok"}
-
-# -------------------------------------------------------
-# DEBUG ROUTES
-# -------------------------------------------------------
-@app.get("/debug-dburl")
-def debug_dburl():
-    return {"DATABASE_URL": os.getenv("DATABASE_URL")}
-
-@app.get("/debug-rows")
-def debug_rows(db: Session = Depends(get_db)):
-    inspector = inspect(db.bind)
-    return {
-        "boards_count": db.query(Board).count(),
-        "columns_count": db.query(Column).count(),
-        "cards_count": db.query(Card).count(),
-        "boards": [b.title for b in db.query(Board).all()],
-        "columns": [c.title for c in db.query(Column).all()],
-        "cards": [c.title for c in db.query(Card).all()],
-        "tables": inspector.get_table_names(),
-    }
