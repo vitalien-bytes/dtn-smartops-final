@@ -10,101 +10,131 @@
 
   <link rel="stylesheet" href="/static/style.css" />
 </head>
+
 <body class="light">
-  <header class="topbar">
-    <div class="brand">
-      <img src="/static/logo.png" alt="DTN SmartOps" class="logo" />
-      <span class="brand-text"><b>DTN</b><span class="accent">SmartOps</span></span>
+
+<!-- 🔐 ===== PROTECTION MOT DE PASSE (ne touche pas au reste) ===== -->
+<script>
+  const PASSWORD = "DTN2025";  // Change-le ici si tu veux un autre MDP
+  const userPass = prompt("🔐 Entrez le mot de passe pour accéder à SmartOps :");
+  if (userPass !== PASSWORD) {
+    alert("Accès refusé ❌");
+    window.location = "index.html";
+  } else {
+    sessionStorage.setItem("auth", "true");
+  }
+</script>
+<!-- =========================================================== -->
+
+<header class="topbar">
+  <div class="brand">
+    <img src="/static/logo.png" alt="DTN SmartOps" class="logo" />
+    <span class="brand-text"><b>DTN</b><span class="accent">SmartOps</span></span>
+  </div>
+
+  <div class="actions">
+    <input id="newColumnName" class="input" placeholder="Nom de la colonne…" />
+    <button id="addColumnBtn" class="btn btn-primary">Ajouter colonne</button>
+    <button id="openDrawerBtn" class="btn btn-accent">+ Nouvelle tâche</button>
+  </div>
+</header>
+
+<main id="board" class="board">
+  <!-- Colonnes injectées par JS -->
+</main>
+
+<!-- =============== Panneau latéral : Nouvelle tâche =============== -->
+<aside id="drawer" class="drawer">
+  <div class="drawer-header">
+    <h3>Nouvelle tâche</h3>
+    <button id="drawerClose" class="icon-btn" aria-label="Fermer">✕</button>
+  </div>
+
+  <form id="taskForm" class="form">
+    <div class="grid-2">
+      <label>Prénom
+        <input name="firstname" class="input" placeholder="Jean" required />
+      </label>
+      <label>Nom
+        <input name="lastname" class="input" placeholder="Dupont" required />
+      </label>
     </div>
 
-    <div class="actions">
-      <input id="newColumnName" class="input" placeholder="Nom de la colonne…" />
-      <button id="addColumnBtn" class="btn btn-primary">Ajouter colonne</button>
-      <button id="openDrawerBtn" class="btn btn-accent">+ Nouvelle tâche</button>
+    <label>Téléphone
+      <input name="phone" class="input" placeholder="06 12 34 56 78" />
+    </label>
+
+    <label>Email
+      <input type="email" name="email" class="input" placeholder="client@mail.com" />
+    </label>
+
+    <label>Adresse postale
+      <textarea name="address" class="input" rows="2" placeholder="N°, rue, compl., CP Ville"></textarea>
+    </label>
+
+    <label>Catégorie de travaux
+      <select name="category" id="category" class="input">
+        <option value="Électricité">Électricité</option>
+        <option value="Télécom">Télécom</option>
+        <option value="GC">GC</option>
+        <option value="Viabilisation">Viabilisation</option>
+        <option value="Panneaux solaires">Panneaux solaires</option>
+        <option value="Borne IRVE">Borne IRVE</option>
+        <option value="Autre">Autre…</option>
+      </select>
+    </label>
+
+    <label id="customCatWrap" class="hidden">Nouvelle catégorie
+      <input name="customCategory" class="input" placeholder="Saisir la catégorie" />
+    </label>
+
+    <label>Date de RDV
+      <input type="date" name="date" class="input" />
+    </label>
+
+    <label>Notes (interne)
+      <textarea name="notes" class="input" rows="3" placeholder="Détails, contraintes, etc."></textarea>
+    </label>
+
+    <div class="form-actions">
+      <button type="button" id="cancelTask" class="btn">Annuler</button>
+      <button type="submit" class="btn btn-primary">Créer</button>
     </div>
-  </header>
+  </form>
+</aside>
+<div id="drawerBackdrop" class="backdrop"></div>
 
-  <main id="board" class="board">
-    <!-- Colonnes injectées par JS -->
-  </main>
-
-  <!-- =============== Panneau latéral : Nouvelle tâche =============== -->
-  <aside id="drawer" class="drawer">
-    <div class="drawer-header">
-      <h3>Nouvelle tâche</h3>
-      <button id="drawerClose" class="icon-btn" aria-label="Fermer">✕</button>
+<!-- =============== Modale fiche client =============== -->
+<div id="cardModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modalTitle">Fiche client</h3>
+      <button id="modalClose" class="icon-btn" aria-label="Fermer">✕</button>
     </div>
-
-    <form id="taskForm" class="form">
-      <div class="grid-2">
-        <label>Prénom
-          <input name="firstname" class="input" placeholder="Jean" required />
-        </label>
-        <label>Nom
-          <input name="lastname" class="input" placeholder="Dupont" required />
-        </label>
-      </div>
-
-      <label>Téléphone
-        <input name="phone" class="input" placeholder="06 12 34 56 78" />
-      </label>
-
-      <label>Email
-        <input type="email" name="email" class="input" placeholder="client@mail.com" />
-      </label>
-
-      <label>Adresse postale
-        <textarea name="address" class="input" rows="2" placeholder="N°, rue, compl., CP Ville"></textarea>
-      </label>
-
-      <label>Catégorie de travaux
-        <select name="category" id="category" class="input">
-          <option value="Électricité">Électricité</option>
-          <option value="Télécom">Télécom</option>
-          <option value="GC">GC</option>
-          <option value="Viabilisation">Viabilisation</option>
-          <option value="Panneaux solaires">Panneaux solaires</option>
-          <option value="Borne IRVE">Borne IRVE</option>
-          <option value="Autre">Autre…</option>
-        </select>
-      </label>
-
-      <label id="customCatWrap" class="hidden">Nouvelle catégorie
-        <input name="customCategory" class="input" placeholder="Saisir la catégorie" />
-      </label>
-
-      <label>Date de RDV
-        <input type="date" name="date" class="input" />
-      </label>
-
-      <label>Notes (interne)
-        <textarea name="notes" class="input" rows="3" placeholder="Détails, contraintes, etc."></textarea>
-      </label>
-
-      <div class="form-actions">
-        <button type="button" id="cancelTask" class="btn">Annuler</button>
-        <button type="submit" class="btn btn-primary">Créer</button>
-      </div>
-    </form>
-  </aside>
-  <div id="drawerBackdrop" class="backdrop"></div>
-
-  <!-- =============== Modale fiche client =============== -->
-  <div id="cardModal" class="modal">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3 id="modalTitle">Fiche client</h3>
-        <button id="modalClose" class="icon-btn" aria-label="Fermer">✕</button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
-      <div class="modal-actions">
-        <button id="modalEdit" class="btn">Modifier</button>
-        <button id="modalDelete" class="btn btn-danger">Supprimer</button>
-      </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button id="modalEdit" class="btn">Modifier</button>
+      <button id="modalDelete" class="btn btn-danger">Supprimer</button>
     </div>
   </div>
-  <div id="modalBackdrop" class="backdrop"></div>
+</div>
+<div id="modalBackdrop" class="backdrop"></div>
 
-  <script src="/static/app.js"></script>
+<script>
+// Protection session (au cas où l’utilisateur bypass index)
+if (!sessionStorage.getItem("auth")) {
+  alert("Session expirée, reconnectez-vous 🔄");
+  window.location = "index.html";
+}
+
+// ✅ Fonction logout unique
+function logout() {
+  sessionStorage.removeItem("auth");
+  window.location = "index.html";
+}
+</script>
+
+<script src="/static/app.js"></script>
+
 </body>
 </html>
